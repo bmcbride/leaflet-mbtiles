@@ -71,7 +71,8 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 			});
 			if (row.value && !this._options.maxZoom) {
 				if (this.options.autoScale) {
-					this.options.maxNativeZoom = Number(row.value);	
+					this.options.maxNativeZoom = Number(row.value);
+					this.options.maxZoom = this._map.getMaxZoom();
 				} else {
 					this.options.maxZoom = Number(row.value);	
 				}
