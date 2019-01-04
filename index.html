@@ -134,7 +134,7 @@
             onLocationError: function(e) {
               alert("Geolocation error: " + e.message);
             }
-          }).addTo(map).start(),
+          }).addTo(map),
 
           addFileCtrl: L.control.addfile({
             position: "topright"
@@ -145,6 +145,8 @@
 
         if (urlParams.has("file")) {
           loadURLFile(urlParams.get("file"));
+        } else {
+          controls.locateCtrl.start();
         }
 
         function loadURLFile(url) {
