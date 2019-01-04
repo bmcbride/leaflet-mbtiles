@@ -1,0 +1,16 @@
+{
+  "name": "MBTiles Viewer",
+  "short_name": "MBTiles Viewer",
+  "description": "A simple map viewer, built for the mobile web",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color":  "#2196f3",
+  "theme_color": "#2196f3",
+  "icons": [
+    {
+      "src": "assets/img/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
