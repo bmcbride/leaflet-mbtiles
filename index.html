@@ -141,6 +141,27 @@
           }).addTo(map)
         };
 
+        var urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has("file")) {
+          loadURLFile(urlParams.get("file"));
+        }
+
+        function loadURLFile(url) {
+          var url = urlParams.get("file");
+          var name = urlParams.get("name") ? urlParams.get("name") : "Unnamed";
+          document.getElementById("loading-icon").classList.remove("fa-globe");
+          document.getElementById("loading-icon").classList.add("fa-spinner", "fa-spin");
+          var layer = L.tileLayer.mbTiles(url, {
+            autoScale: true,
+            fitBounds: true
+          }).on("databaseloaded", function(e) {
+            document.getElementById("loading-icon").classList.remove("fa-spin", "fa-spinner");
+            document.getElementById("loading-icon").classList.add("fa-globe");
+            controls.layerCtrl.addOverlay(layer, name);
+          }).addTo(map);
+        }
+
         if ("serviceWorker" in navigator) {
           navigator.serviceWorker.register("service-worker.js");
         }
