@@ -43,7 +43,7 @@
             fileInput.style.display = "none";
             // Load on file change
             fileInput.addEventListener('change', function () {
-              document.getElementById("loading-icon").classList.remove("fa-globe");
+              document.getElementById("loading-icon").classList.remove("fa-map");
               document.getElementById("loading-icon").classList.add("fa-spinner", "fa-spin");
 
               var file = fileInput.files[0];
@@ -56,7 +56,7 @@
                   fitBounds: true
                 }).on("databaseloaded", function(e) {
                   document.getElementById("loading-icon").classList.remove("fa-spin", "fa-spinner");
-                  document.getElementById("loading-icon").classList.add("fa-globe");
+                  document.getElementById("loading-icon").classList.add("fa-map");
                   controls.layerCtrl.addOverlay(layer, (layer.options.name ? layer.options.name : file.name.replace(".mbtiles", "")));
                 }).addTo(map);
               }
@@ -69,7 +69,7 @@
             
             var btn = L.DomUtil.create("div", "leaflet-bar leaflet-control");
             // btn.innerHTML = "<button style='height: 30px; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; background-color: #fff; font-size: medium;' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-folder-open'></i></button>";
-            btn.innerHTML = '<a class="leaflet-bar-part leaflet-bar-part-single" style="font-size: 1.4em; color: #444; cursor: pointer;" title="Load MBTiles" onclick="fileInput.click();"><i id="loading-icon" class="fas fa-globe"></i></a>';
+            btn.innerHTML = '<a class="leaflet-bar-part leaflet-bar-part-single" style="font-size: 1.4em; color: #444; cursor: pointer;" title="Load MBTiles" onclick="fileInput.click();"><i id="loading-icon" class="fas fa-map"></i></a>';
             return btn
           }
         });
@@ -152,14 +152,14 @@
         function loadURLFile(url) {
           var url = urlParams.get("file");
           var name = urlParams.get("name") ? urlParams.get("name") : "Unnamed";
-          document.getElementById("loading-icon").classList.remove("fa-globe");
+          document.getElementById("loading-icon").classList.remove("fa-map");
           document.getElementById("loading-icon").classList.add("fa-spinner", "fa-spin");
           var layer = L.tileLayer.mbTiles(url, {
             autoScale: true,
             fitBounds: true
           }).on("databaseloaded", function(e) {
             document.getElementById("loading-icon").classList.remove("fa-spin", "fa-spinner");
-            document.getElementById("loading-icon").classList.add("fa-globe");
+            document.getElementById("loading-icon").classList.add("fa-map");
             controls.layerCtrl.addOverlay(layer, name);
           }).addTo(map);
         }
