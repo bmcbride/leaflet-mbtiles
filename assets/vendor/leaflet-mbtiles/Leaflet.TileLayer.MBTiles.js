@@ -8,12 +8,12 @@ If they exist in the given file, it will handle the following metadata rows:
 
 L.TileLayer.MBTiles = L.TileLayer.extend({
 	
-	initialize: function (databaseUrl, options) {
+	initialize: function (url, options) {
 		this._options = options;
 		this._databaseIsLoaded = false;
 
-		if (typeof databaseUrl === 'string') {
-			fetch(databaseUrl).then(response => {
+		if (typeof url === 'string') {
+			fetch(url).then(response => {
 				return response.arrayBuffer();
 			}).then(buffer => {
 				this._openDB(buffer);
@@ -22,27 +22,24 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 					error: err
 				});
 			})
-		} else if (databaseUrl instanceof ArrayBuffer) {
-			var t = this;
-			setTimeout(function () {
-				t._openDB(databaseUrl);
-			}, 100);
+		} else if (url instanceof ArrayBuffer) {
+			const layer = this;
+			initSqlJs().then(function(SQL){
+				layer._openDB(url);
+			});
 		} else {
 			this.fire('databaseerror');
 		}
 
-		return L.TileLayer.prototype.initialize.call(this, databaseUrl, options);
+		return L.TileLayer.prototype.initialize.call(this, url, options);
 	},
 
 	_openDB: function (buffer) {
 		try {
-			/// This assumes the `SQL` global variable to exist!!
 			this._db = new SQL.Database(new Uint8Array(buffer));
 			this._stmt = this._db.prepare('SELECT tile_data FROM tiles WHERE zoom_level = :z AND tile_column = :x AND tile_row = :y');
-
-			// Load some metadata (or at least try to)
-			var metaStmt = this._db.prepare('SELECT value FROM metadata WHERE name = :key');
-			var row;
+			const metaStmt = this._db.prepare('SELECT value FROM metadata WHERE name = :key');
+			let row = null;
 
 			row = metaStmt.getAsObject({
 				':key': 'name'
@@ -71,7 +68,7 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 			});
 			if (row.value && !this._options.maxZoom) {
 				if (this.options.autoScale) {
-					this.options.maxNativeZoom = Number(row.value);
+					this.options.maxNativeZoom = Number(row.value);	
 					this.options.maxZoom = this._map.getMaxZoom();
 				} else {
 					this.options.maxZoom = Number(row.value);	
@@ -81,13 +78,16 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 			row = metaStmt.getAsObject({
 				':key': 'bounds'
 			});
-			if (row.value && this.options.fitBounds) {
+			if (row.value && !this.options.bounds) {
 				var bbox = row.value.split(",");
 				var bounds = [
 					[parseFloat(bbox[1]), parseFloat(bbox[0])],
 					[parseFloat(bbox[3]), parseFloat(bbox[2])]
 				];
-				this._map.fitBounds(bounds);
+				this.options.bounds = bounds;
+				if (this.options.fitBounds) {
+					this._map.fitBounds(bounds);	
+				}
 			}
 
 			row = metaStmt.getAsObject({
@@ -117,7 +117,7 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 	},
 
 	createTile: function (coords, done) {
-		var tile = document.createElement('img');
+		const tile = document.createElement('img');
 
 		if (this.options.crossOrigin) {
 			tile.crossOrigin = '';
@@ -157,7 +157,7 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 	getTileUrl: function (coords) {
 
 		// Luckily, SQL execution is synchronous. If not, this code would get much more complicated.
-		var row = this._stmt.getAsObject({
+		const row = this._stmt.getAsObject({
 			':x': coords.x,
 			':y': this._globalTileRange.max.y - coords.y,
 			':z': coords.z
@@ -174,12 +174,12 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 });
 
 /*
-🍂factory tileLayer.mbTiles(databaseUrl: String, options: TileLayer options)
-Returns a new `L.TileLayer.MBTiles`, fetching and using the database given in `databaseUrl`.
+🍂factory tileLayer.mbTiles(url: String, options: TileLayer options)
+Returns a new `L.TileLayer.MBTiles`, fetching and using the database given in `url`.
 🍂alternative
 🍂factory tileLayer.mbTiles(databaseBuffer: Uint8Array, options: TileLayer options)
 Returns a new `L.TileLayer.MBTiles`, given a MBTiles database as a javascript binary array.
 */
-L.tileLayer.mbTiles = function (databaseUrl, options) {
-	return new L.TileLayer.MBTiles(databaseUrl, options);
+L.tileLayer.mbTiles = function (url, options) {
+	return new L.TileLayer.MBTiles(url, options);
 }

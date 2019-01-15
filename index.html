@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -22,104 +21,111 @@
         width: 100%;
         margin: 0;
       }
+      .layer-btn {
+        padding-left: 6px;
+      }
+      .file-control-btn {
+        font-size: 1.4em;
+        color: #444;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
       
   <div id="map"></div>
-    <script src="assets/vendor/sql.js/sql.js"></script>
+    <script src="assets/vendor/sql.js/sql-wasm.js"></script>
     <script src="assets/vendor/leaflet-1.4.0/leaflet.js"></script>
     <script src="assets/vendor/leaflet-locatecontrol-0.66.0/L.Control.Locate.min.js"></script>
     <script src="assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js"></script>
 
     <script>
       (function() {
+        /*** Begin custom input control for adding local file ***/
         L.Control.AddFile = L.Control.extend({
           onAdd: function(map) {
             fileInput = L.DomUtil.create("input", "hidden");
             fileInput.type = "file";
-            fileInput.multiple = "multiple";
             fileInput.accept = ".mbtiles";
             fileInput.style.display = "none";
-            // Load on file change
-            fileInput.addEventListener('change', function () {
-              document.getElementById("loading-icon").classList.remove("fa-map");
-              document.getElementById("loading-icon").classList.add("fa-spinner", "fa-spin");
+            
+            fileInput.addEventListener("change", function () {
+              showLoader();
 
-              var file = fileInput.files[0];
-              var reader = new FileReader();
+              const file = fileInput.files[0];
+              const reader = new FileReader();
 
               reader.onload = function(e) {
-              
-                var layer = L.tileLayer.mbTiles(reader.result, {
+
+                const layer = L.tileLayer.mbTiles(reader.result, {
                   autoScale: true,
-                  fitBounds: true
+                  fitBounds: true,
+                  updateWhenIdle: false
                 }).on("databaseloaded", function(e) {
-                  document.getElementById("loading-icon").classList.remove("fa-spin", "fa-spinner");
-                  document.getElementById("loading-icon").classList.add("fa-map");
-                  controls.layerCtrl.addOverlay(layer, (layer.options.name ? layer.options.name : file.name.replace(".mbtiles", "")));
+                  hideLoader();
+                  var name = (layer.options.name ? layer.options.name : file.name.replace(".mbtiles", ""));
+                  controls.layerCtrl.addOverlay(layer, `<span>${name}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(layer)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a></span>`);
                 }).addTo(map);
               }
 
-              // reader.readAsDataURL(file);
               reader.readAsArrayBuffer(file);
-
               this.value = "";
             }, false);
             
-            var btn = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-            // btn.innerHTML = "<button style='height: 30px; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; background-color: #fff; font-size: medium;' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-folder-open'></i></button>";
-            btn.innerHTML = '<a class="leaflet-bar-part leaflet-bar-part-single" style="font-size: 1.4em; color: #444; cursor: pointer;" title="Load MBTiles" onclick="fileInput.click();"><i id="loading-icon" class="fas fa-map"></i></a>';
-            return btn
+            const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+            div.innerHTML = "<a class='leaflet-bar-part leaflet-bar-part-single file-control-btn' title='Load file' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-map'></i></a>";
+            return div
           }
         });
 
         L.control.addfile = function(opts) {
           return new L.Control.AddFile(opts);
         }
+        /*** end custom control ***/
         
-        var map = L.map("map", {
-          zoomControl: false,
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const map = L.map("map", {
           zoomSnap: 0.5,
           maxZoom: 22
         }).fitWorld();
         map.attributionControl.setPrefix(null);
 
-        var basemaps = {
-          osm: L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.@2xpng", {
-            maxZoom: 18,
+        const baseLayers = {
+          "Streets": L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.@2xpng", {
+            maxNativeZoom: 18,
+            maxZoom: map.getMaxZoom(),
             attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
           }).addTo(map),
-
-          topo: L.tileLayer("https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}", {
-            maxZoom: 18,
+          
+          "Topo": L.tileLayer("https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}", {
             maxNativeZoom: 16,
+            maxZoom: map.getMaxZoom(),
             attribution: "USGS",
           }),
 
-          charts: L.tileLayer("https://tileservice.charts.noaa.gov/tiles/50000_1/{z}/{x}/{y}.png", {
-            maxZoom: 18,
+          "Charts": L.tileLayer("https://tileservice.charts.noaa.gov/tiles/50000_1/{z}/{x}/{y}.png", {
+            maxNativeZoom: 18,
+            maxZoom: map.getMaxZoom(),
             attribution: "NOAA",
           }),
 
-          none: L.tileLayer("")
+          "None": L.tileLayer("", {
+            maxZoom: map.getMaxZoom()
+          })
         };
 
-        var controls = {
-          layerCtrl: L.control.layers({
-            "OpenStreetMap": basemaps.osm,
-            "USGS Topo": basemaps.topo,
-            "NOAA Charts": basemaps.charts,
-            "None": basemaps.none
-          }, null, {
-            position: "topleft"
+        const controls = {
+          layerCtrl: L.control.layers(baseLayers, null, {
+            collapsed: true,
+            position: "topright"
           }).addTo(map),
 
           locateCtrl: L.control.locate({
             icon: "fa fa-crosshairs",
             setView: "untilPan",
             cacheLocation: true,
-            position: "topright",
+            position: "topleft",
             flyTo: false,
             circleStyle: {
               interactive: false
@@ -132,43 +138,86 @@
               maxZoom: 17
             },
             onLocationError: function(e) {
-              alert("Geolocation error: " + e.message);
+              alert(e.message);
             }
           }).addTo(map),
 
-          addFileCtrl: L.control.addfile({
-            position: "topright"
+          fileCtrl: L.control.addfile({
+            position: "topleft"
           }).addTo(map)
         };
 
-        var urlParams = new URLSearchParams(window.location.search);
+        const overlays = {
+          chart: L.tileLayer.mbTiles("./14782_1.mbtiles", {
+            name: "Champlain Chart",
+            autoScale: true,
+            fitBounds: true,
+            updateWhenIdle: false,
+            attribution: "NOAA"
+          }).once("loading", showLoader)
+          .on("databaseloaded", function(e) {
+            hideLoader();
+            controls.layerCtrl.addOverlay(this, `<span>${this.options.name}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(this)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a></span>`);
+          }).addTo(map)
+        };
+
+        function showLoader() {
+          document.getElementById("loading-icon").classList.remove("fa-map");
+          document.getElementById("loading-icon").classList.add("fa-spinner", "fa-spin");
+        }
+
+        function hideLoader() {
+          document.getElementById("loading-icon").classList.remove("fa-spin", "fa-spinner");
+          document.getElementById("loading-icon").classList.add("fa-map");
+        }
+
+        function goOffline() {
+          const layers = Object.keys(baseLayers);
+          for (const layer of layers) {
+            if (layer == "None") {
+              map.addLayer(baseLayers[layer]);
+            } else {
+              map.removeLayer(baseLayers[layer]);
+            }
+          }
+        }
+
+        function loadURLFile(url) {
+          showLoader();
+          L.tileLayer.mbTiles(url, {
+            autoScale: true,
+            fitBounds: true,
+            updateWhenIdle: false
+          }).on("databaseloaded", function(e) {
+            hideLoader();
+            const name = urlParams.get("name") ? urlParams.get("name") : urlParams.get("file").endsWith(".mbtiles") ? url.substring(url.lastIndexOf("/")+1).replace(".mbtiles","") : "Unnamed";
+            controls.layerCtrl.addOverlay(this, `<span>${name}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(this)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a></span>`);
+          }).addTo(map);
+        }
 
         if (urlParams.has("file")) {
           loadURLFile(urlParams.get("file"));
         } else {
-          controls.locateCtrl.start();
+          //controls.locateCtrl.start();
         }
 
-        function loadURLFile(url) {
-          var url = urlParams.get("file");
-          var name = urlParams.get("name") ? urlParams.get("name") : "Unnamed";
-          document.getElementById("loading-icon").classList.remove("fa-map");
-          document.getElementById("loading-icon").classList.add("fa-spinner", "fa-spin");
-          var layer = L.tileLayer.mbTiles(url, {
-            autoScale: true,
-            fitBounds: true
-          }).on("databaseloaded", function(e) {
-            document.getElementById("loading-icon").classList.remove("fa-spin", "fa-spinner");
-            document.getElementById("loading-icon").classList.add("fa-map");
-            controls.layerCtrl.addOverlay(layer, name);
-          }).addTo(map);
-        }
+        navigator.onLine ? null : goOffline();
+
+        window.addEventListener("offline",  function(event) {
+          goOffline();
+        });
+
+        initSqlJs({
+          locateFile: function() {
+            return "assets/vendor/sql.js/sql-wasm.wasm";
+          }
+        });
+
+        window["map"] = map;
 
         if ("serviceWorker" in navigator) {
           navigator.serviceWorker.register("service-worker.js");
         }
-
-        window["map"] = map;
       })();
     </script>
   </body>

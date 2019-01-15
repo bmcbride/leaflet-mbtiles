@@ -10,7 +10,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-const PRECACHE = 'precache-01.04.19.5';
+const PRECACHE = 'precache-01.15.19.1';
 const RUNTIME = 'runtime';
 
 // A list of local resources we always want to be cached.
@@ -33,8 +33,11 @@ const PRECACHE_URLS = [
   'assets/vendor/leaflet-locatecontrol-0.66.0/L.Control.Locate.min.js',
   'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js',
   'assets/vendor/fontawesome-free-5.6.1-web/css/all.min.css',
-  'assets/vendor/fontawesome-free-5.6.1-web/webfonts/fa-solid-900.woff2',
-  'assets/vendor/sql.js/sql.js'
+  'assets/vendor/fontawesome-free-5.6.1-web/webfonts/fa-solid-900.ttf',
+  'assets/vendor/fontawesome-free-5.6.1-web/webfonts/fa-solid-900.woff',
+  'assets/vendor/sql.js/sql-wasm.js',
+  'assets/vendor/sql.js/sql-wasm.wasm',
+  '14782_1.mbtiles'
 ];
 
 // The install handler takes care of precaching the resources we always need.
