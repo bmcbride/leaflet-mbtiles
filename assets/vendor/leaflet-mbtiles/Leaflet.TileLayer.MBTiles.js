@@ -16,7 +16,10 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 			fetch(url).then(response => {
 				return response.arrayBuffer();
 			}).then(buffer => {
-				this._openDB(buffer);
+				const layer = this;
+				initSqlJs().then(function(SQL){
+					layer._openDB(buffer);
+				});
 			}).catch(err => {
 				this.fire('databaseerror', {
 					error: err
