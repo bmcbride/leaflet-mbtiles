@@ -34,7 +34,7 @@ const PRECACHE_URLS = [
   'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js',
   'assets/vendor/fontawesome-free-5.6.1-web/css/all.min.css',
   'assets/vendor/fontawesome-free-5.6.1-web/webfonts/fa-solid-900.ttf',
-  'assets/vendor/fontawesome-free-5.6.1-web/webfonts/fa-solid-900.woff',
+  'assets/vendor/fontawesome-free-5.6.1-web/webfonts/fa-solid-900.woff2',
   'assets/vendor/sql.js/sql-wasm.js',
   'assets/vendor/sql.js/sql-wasm.wasm',
   '14782_1.mbtiles'
