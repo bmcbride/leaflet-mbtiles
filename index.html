@@ -149,7 +149,7 @@
 
         const overlays = {
           chart: L.tileLayer.mbTiles("./14782_1.mbtiles", {
-            name: "Champlain Chart",
+            name: "NOAA Chart",
             autoScale: true,
             fitBounds: true,
             updateWhenIdle: false,
@@ -158,7 +158,7 @@
           .on("databaseloaded", function(e) {
             hideLoader();
             controls.layerCtrl.addOverlay(this, `<span>${this.options.name}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(this)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a></span>`);
-          }).addTo(map)
+          })
         };
 
         function showLoader() {
@@ -211,6 +211,8 @@
           locateFile: function() {
             return "assets/vendor/sql.js/sql-wasm.wasm";
           }
+        }).then(function(SQL){
+          map.addLayer(overlays.chart);
         });
 
         window["map"] = map;
