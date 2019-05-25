@@ -1,6 +1,6 @@
 {
-  "name": "MBTiles Viewer",
-  "short_name": "MBTiles Viewer",
+  "name": "Map Viewer",
+  "short_name": "Map Viewer",
   "description": "A simple map viewer, built for the mobile web",
   "start_url": "index.html",
   "display": "standalone",

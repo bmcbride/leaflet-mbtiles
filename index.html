@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="description" content="Load and view MBTiles maps">
+    <meta name="description" content="A simple map viewer, built for the mobile web">
     <meta name="author" content="Bryan McBride">
-    <title>MBTiles Viewer</title>
+    <title>Map Viewer</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-    <link rel="stylesheet" href="assets/vendor/leaflet-1.4.0/leaflet.css">
-    <link rel="stylesheet" href="assets/vendor/leaflet-locatecontrol-0.66.0/L.Control.Locate.min.css">
-    <link rel="stylesheet" href="assets/vendor/fontawesome-free-5.6.1-web/css/all.min.css">
+    <link rel="stylesheet" href="assets/vendor/leaflet-1.5.1/leaflet.css">
+    <link rel="stylesheet" href="assets/vendor/leaflet-locatecontrol-0.66.2/L.Control.Locate.min.css">
+    <link rel="stylesheet" href="assets/vendor/fontawesome-free-5.8.2-web/css/all.min.css">
     <style>
       html, body, #map {
         height: 100%;
@@ -35,13 +35,17 @@
       
   <div id="map"></div>
     <script src="assets/vendor/sql.js/sql-wasm.js"></script>
-    <script src="assets/vendor/leaflet-1.4.0/leaflet.js"></script>
-    <script src="assets/vendor/leaflet-locatecontrol-0.66.0/L.Control.Locate.min.js"></script>
+    <script src="assets/vendor/leaflet-1.5.1/leaflet.js"></script>
+    <script src="assets/vendor/leaflet-locatecontrol-0.66.2/L.Control.Locate.min.js"></script>
     <script src="assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js"></script>
+    <script src="assets/vendor/Leaflet.FileLayer-1.2.0/togeojson.js"></script>
+    <script src="assets/vendor/Leaflet.FileLayer-1.2.0/leaflet.filelayer.js"></script>
 
     <script>
+      L.Control.FileLayerLoad.LABEL = '<i class="fas fa-folder-open"></i>';
+
       (function() {
-        /*** Begin custom input control for adding local file ***/
+        /*** Begin custom input control for adding local mbtiles file ***/
         L.Control.AddFile = L.Control.extend({
           onAdd: function(map) {
             fileInput = L.DomUtil.create("input", "hidden");
@@ -73,7 +77,7 @@
             }, false);
             
             const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-            div.innerHTML = "<a class='leaflet-bar-part leaflet-bar-part-single file-control-btn' title='Load file' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-map'></i></a>";
+            div.innerHTML = "<a class='leaflet-bar-part leaflet-bar-part-single file-control-btn' title='Load MBTiles' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-map'></i></a>";
             return div
           }
         });
@@ -87,7 +91,8 @@
 
         const map = L.map("map", {
           zoomSnap: 0.5,
-          maxZoom: 22
+          maxZoom: 22,
+          zoomControl: false
         }).fitWorld();
         map.attributionControl.setPrefix(null);
 
@@ -142,24 +147,53 @@
             }
           }).addTo(map),
 
-          fileCtrl: L.control.addfile({
+          mbtilesFileCtrl: L.control.addfile({
             position: "topleft"
+          }).addTo(map),
+
+          fileLayerCtrl: L.Control.fileLayerLoad({
+            layer: L.geoJson,
+            layerOptions: {
+              style: {
+                color: "red"
+              },
+              onEachFeature: function (feature, layer) {
+                var table = "<table>";
+                for (const key in feature.properties) {
+                  if (feature.properties.hasOwnProperty(key)) {
+                    table += "<tr><th>" + key + "</th><td>" + feature.properties[key] + "</td></tr>";
+                  }
+                }
+                table += "<table>";
+                layer.bindPopup(table, {
+                  maxHeight: 250
+                });
+              }
+            },
+            addToMap: true,
+            // File size limit in kb (default: 1024) ?
+            fileSizeLimit: 5120,
+            formats: [".geojson", ".kml", ".gpx"]
           }).addTo(map)
         };
 
-        const overlays = {
-          chart: L.tileLayer.mbTiles("14782_1.mbtiles", {
-            name: "NOAA Chart",
-            autoScale: true,
-            fitBounds: true,
-            updateWhenIdle: false,
-            attribution: "NOAA"
-          }).once("loading", showLoader)
-          .on("databaseloaded", function(e) {
-            hideLoader();
-            controls.layerCtrl.addOverlay(this, `<span>${this.options.name}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(this)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a></span>`);
-          })
-        };
+        // const overlays = {
+        //   chart: L.tileLayer.mbTiles("14782_1.mbtiles", {
+        //     name: "NOAA Chart",
+        //     autoScale: true,
+        //     fitBounds: true,
+        //     updateWhenIdle: false,
+        //     attribution: "NOAA"
+        //   }).once("loading", showLoader)
+        //   .on("databaseloaded", function(e) {
+        //     hideLoader();
+        //     controls.layerCtrl.addOverlay(this, `<span>${this.options.name}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(this)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a></span>`);
+        //   })
+        // };
+
+        controls.fileLayerCtrl.loader.on("data:loaded", function (event) {
+          controls.layerCtrl.addOverlay(event.layer, event.filename);
+        });
 
         function showLoader() {
           document.getElementById("loading-icon").classList.remove("fa-map");
@@ -198,7 +232,7 @@
         if (urlParams.has("file")) {
           loadURLFile(urlParams.get("file"));
         } else {
-          // controls.locateCtrl.start();
+          controls.locateCtrl.start();
         }
 
         navigator.onLine ? null : goOffline();
@@ -212,7 +246,7 @@
             return "assets/vendor/sql.js/sql-wasm.wasm";
           }
         }).then(function(SQL){
-          map.addLayer(overlays.chart);
+          // map.addLayer(overlays.chart);
         });
 
         window["map"] = map;
