@@ -158,15 +158,16 @@
                 color: "red"
               },
               onEachFeature: function (feature, layer) {
-                var table = "<table>";
+                var table = "<div style='overflow:auto;'><table>";
                 for (const key in feature.properties) {
                   if (feature.properties.hasOwnProperty(key)) {
                     table += "<tr><th>" + key + "</th><td>" + feature.properties[key] + "</td></tr>";
                   }
                 }
-                table += "<table>";
+                table += "</table></div>";
                 layer.bindPopup(table, {
-                  maxHeight: 250
+                  maxHeight: 300,
+                  maxWidth: 250
                 });
               }
             },
