@@ -161,7 +161,7 @@
                 var table = "<div style='overflow:auto;'><table>";
                 for (const key in feature.properties) {
                   if (feature.properties.hasOwnProperty(key)) {
-                    table += "<tr><th>" + key + "</th><td>" + feature.properties[key] + "</td></tr>";
+                    table += "<tr><th>" + key + "</th><td>" + formatProperty(feature.properties[key]) + "</td></tr>";
                   }
                 }
                 table += "</table></div>";
@@ -195,6 +195,14 @@
         controls.fileLayerCtrl.loader.on("data:loaded", function (event) {
           controls.layerCtrl.addOverlay(event.layer, event.filename);
         });
+
+        function formatProperty(value) {
+          if (typeof value == "string" && (value.indexOf("http") === 0 || value.indexOf("https") === 0)) {
+            return "<a href='" + value + "' target='_blank'>" + value + "</a>";
+          } else {
+            return value;
+          }
+        }
 
         function showLoader() {
           document.getElementById("loading-icon").classList.remove("fa-map");
