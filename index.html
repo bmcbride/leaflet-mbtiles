@@ -35,6 +35,7 @@
       
   <div id="map"></div>
     <script src="assets/vendor/sql.js/sql-wasm.js"></script>
+    <script src="assets/vendor/localForage-1.7.3/localforage.min.js"></script>
     <script src="assets/vendor/leaflet-1.5.1/leaflet.js"></script>
     <script src="assets/vendor/leaflet-locatecontrol-0.66.2/L.Control.Locate.min.js"></script>
     <script src="assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js"></script>
@@ -42,7 +43,10 @@
     <script src="assets/vendor/Leaflet.FileLayer-1.2.0/leaflet.filelayer.js"></script>
 
     <script>
-      L.Control.FileLayerLoad.LABEL = '<i class="fas fa-folder-open"></i>';
+      var storage = localforage.createInstance({
+        name: "maps",
+        storeName: "saved_maps"
+      });
 
       (function() {
         /*** Begin custom input control for adding local mbtiles file ***/
@@ -60,7 +64,6 @@
               const reader = new FileReader();
 
               reader.onload = function(e) {
-
                 const layer = L.tileLayer.mbTiles(reader.result, {
                   autoScale: true,
                   fitBounds: true,
@@ -68,7 +71,13 @@
                 }).on("databaseloaded", function(e) {
                   hideLoader();
                   var name = (layer.options.name ? layer.options.name : file.name.replace(".mbtiles", ""));
-                  controls.layerCtrl.addOverlay(layer, `<span>${name}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(layer)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a></span>`);
+                  controls.layerCtrl.addOverlay(layer, `<span>${name}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(layer)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a>&nbsp;<a class="layer-btn" href="#" onclick="deleteMap(map._layers[${L.Util.stamp(layer)}], '${name}'); return false;"><i class="fas fa-trash" style="color: red"></i></a></span>`);
+
+                  storage.setItem(name, reader.result).then(function (value) {
+                    //alert("MBTiles file saved!");
+                  }).catch(function(err) {
+                    alert("Error saving map!", "Save error");
+                  });
                 }).addTo(map);
               }
 
@@ -77,7 +86,7 @@
             }, false);
             
             const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-            div.innerHTML = "<a class='leaflet-bar-part leaflet-bar-part-single file-control-btn' title='Load MBTiles' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-map'></i></a>";
+            div.innerHTML = "<a class='leaflet-bar-part leaflet-bar-part-single file-control-btn' title='Load MBTiles' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-globe'></i></a>";
             return div
           }
         });
@@ -174,7 +183,9 @@
             addToMap: true,
             // File size limit in kb (default: 1024) ?
             fileSizeLimit: 5120,
-            formats: [".geojson", ".kml", ".gpx"]
+            formats: [".geojson", ".kml", ".gpx"],
+            title: "Load local file (GPX, KML, GeoJSON)",
+            label: "<i class='fas fa-folder-open'></i>"
           }).addTo(map)
         };
 
@@ -193,7 +204,7 @@
         // };
 
         controls.fileLayerCtrl.loader.on("data:loaded", function (event) {
-          controls.layerCtrl.addOverlay(event.layer, event.filename);
+          controls.layerCtrl.addOverlay(event.layer, `<span>${event.filename}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(event.layer)}].getBounds()); return false;"><i class="fas fa-expand-arrows-alt"></i></a></span>`);
         });
 
         function formatProperty(value) {
@@ -238,6 +249,35 @@
           }).addTo(map);
         }
 
+        function loadSavedMaps() {
+          storage.iterate(function(value, key, iterationNumber) {
+            var layer = L.tileLayer.mbTiles(value, {
+              autoScale: true,
+              fitBounds: false,
+              updateWhenIdle: false
+            }).on("databaseloaded", function(e) {
+              controls.layerCtrl.addOverlay(e.target, `<span>${key}<a class="layer-btn" href="#" onclick="map.fitBounds(map._layers[${L.Util.stamp(e.target)}].options.bounds); return false;"><i class="fas fa-expand-arrows-alt"></i></a>&nbsp;<a class="layer-btn" href="#" onclick="deleteMap(map._layers[${L.Util.stamp(e.target)}], '${key}'); return false;"><i class="fas fa-trash" style="color: red"></i></a></span>`);
+            }).addTo(map);
+          }).then(function() {
+            
+          }).catch(function(err) {
+            alert("Error loading saved maps!");
+          });
+        }
+
+        function deleteMap(id, key) {
+          var cfm = confirm("Delete this map?");
+          if (cfm == true) {
+            map.removeLayer(id);
+            controls.layerCtrl.removeLayer(id);
+            storage.removeItem(key).then(function () {
+              // alert("deleted " + key);
+            });
+          } else {
+            
+          }
+        }
+
         if (urlParams.has("file")) {
           loadURLFile(urlParams.get("file"));
         } else {
@@ -257,6 +297,8 @@
         }).then(function(SQL){
           // map.addLayer(overlays.chart);
         });
+
+        loadSavedMaps();
 
         window["map"] = map;
 

@@ -222,16 +222,14 @@
     });
 
     var FileLayerLoad = L.Control.extend({
-        statics: {
-            TITLE: 'Load local file (GPX, KML, GeoJSON)',
-            LABEL: '&#8965;'
-        },
         options: {
             position: 'topleft',
             fitBounds: true,
             layerOptions: {},
             addToMap: true,
-            fileSizeLimit: 1024
+            fileSizeLimit: 1024,
+            title: 'Load local file (GPX, KML, GeoJSON)',
+            label: '&#8965;'
         },
 
         initialize: function (options) {
@@ -294,17 +292,17 @@
 
             // Create a button, and bind click on hidden file input
             var fileInput;
-            var zoomName = 'leaflet-control-filelayer leaflet-control-zoom';
-            var barName = 'leaflet-bar';
-            var partName = barName + '-part';
-            var container = L.DomUtil.create('div', zoomName + ' ' + barName);
-            var link = L.DomUtil.create('a', zoomName + '-in ' + partName, container);
-            link.innerHTML = L.Control.FileLayerLoad.LABEL;
+            // var zoomName = 'leaflet-control-filelayer leaflet-control-zoom';
+            // var barName = 'leaflet-bar';
+            // var partName = barName + '-part';
+            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            var link = L.DomUtil.create('a', 'leaflet-bar-part leaflet-bar-part-single file-control-btn', container);
+            link.innerHTML = this.options.label || L.Control.FileLayerLoad.LABEL;
             link.href = '#';
-            link.title = L.Control.FileLayerLoad.TITLE;
+            link.title = this.options.title || L.Control.FileLayerLoad.TITLE;
 
             // Create an invisible file input
-            fileInput = L.DomUtil.create('input', 'hidden', container);
+            fileInput = L.DomUtil.create('input', 'hidden');
             fileInput.type = 'file';
             fileInput.multiple = 'multiple';
             if (!this.options.formats) {
@@ -312,7 +310,7 @@
             } else {
                 fileInput.accept = this.options.formats.join(',');
             }
-            fileInput.style.display = 'none';
+            // fileInput.style.display = 'none';
             // Load on file change
             fileInput.addEventListener('change', function () {
                 thisLoader.loadMultiple(this.files);
@@ -320,7 +318,7 @@
                 this.value = '';
             }, false);
 
-            L.DomEvent.disableClickPropagation(link);
+            L.DomEvent.disableClickPropagation(container);
             L.DomEvent.on(link, 'click', function (e) {
                 fileInput.click();
                 e.preventDefault();

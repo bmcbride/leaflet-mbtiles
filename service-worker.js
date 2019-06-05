@@ -10,7 +10,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-const PRECACHE = 'precache-05.25.19.1';
+const PRECACHE = 'precache-06.05.19.1';
 const RUNTIME = 'runtime';
 
 // A list of local resources we always want to be cached.
@@ -37,6 +37,7 @@ const PRECACHE_URLS = [
   'assets/vendor/fontawesome-free-5.8.2-web/css/all.min.css',
   'assets/vendor/fontawesome-free-5.8.2-web/webfonts/fa-solid-900.ttf',
   'assets/vendor/fontawesome-free-5.8.2-web/webfonts/fa-solid-900.woff2',
+  'assets/vendor/localForage-1.7.3/localforage.min.js',
   'assets/vendor/sql.js/sql-wasm.js',
   'assets/vendor/sql.js/sql-wasm.wasm'
 ];
@@ -44,7 +45,7 @@ const PRECACHE_URLS = [
 // The install handler takes care of precaching the resources we always need.
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(PRECACHE)
+    caches.open(PRECACHE, 'map-cache')
       .then(cache => cache.addAll(PRECACHE_URLS))
       .then(self.skipWaiting())
   );
