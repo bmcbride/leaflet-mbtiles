@@ -48,7 +48,7 @@
         storeName: "saved_maps"
       });
 
-      (function() {
+      // (function() {
         /*** Begin custom input control for adding local mbtiles file ***/
         L.Control.AddFile = L.Control.extend({
           onAdd: function(map) {
@@ -300,12 +300,12 @@
 
         loadSavedMaps();
 
-        window["map"] = map;
+        // window["map"] = map;
 
         if ("serviceWorker" in navigator) {
           navigator.serviceWorker.register("service-worker.js");
         }
-      })();
+      // })();
     </script>
   </body>
 </html>
