@@ -10,7 +10,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-const PRECACHE = 'precache-06.05.19.2';
+const PRECACHE = 'precache-08.02.19.1';
 const RUNTIME = 'runtime';
 
 // A list of local resources we always want to be cached.
@@ -29,17 +29,16 @@ const PRECACHE_URLS = [
   'assets/vendor/leaflet-1.5.1/images/marker-shadow.png',
   'assets/vendor/leaflet-1.5.1/leaflet.css',
   'assets/vendor/leaflet-1.5.1/leaflet.js',
-  'assets/vendor/leaflet-locatecontrol-0.66.2/L.Control.Locate.min.css',
-  'assets/vendor/leaflet-locatecontrol-0.66.2/L.Control.Locate.min.js',
+  'assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.css',
+  'assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.js',
   'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js',
-  'assets/vendor/Leaflet.FileLayer-1.2.0/togeojson.js',
-  'assets/vendor/Leaflet.FileLayer-1.2.0/leaflet.filelayer.js',
-  'assets/vendor/fontawesome-free-5.8.2-web/css/all.min.css',
-  'assets/vendor/fontawesome-free-5.8.2-web/webfonts/fa-solid-900.ttf',
-  'assets/vendor/fontawesome-free-5.8.2-web/webfonts/fa-solid-900.woff2',
-  'assets/vendor/localForage-1.7.3/localforage.min.js',
+  'assets/vendor/fontawesome-free-5.10.0-web/css/all.min.css',
+  'assets/vendor/fontawesome-free-5.10.0-web/webfonts/fa-solid-900.ttf',
+  'assets/vendor/fontawesome-free-5.10.0-web/webfonts/fa-solid-900.woff2',
   'assets/vendor/sql.js/sql-wasm.js',
-  'assets/vendor/sql.js/sql-wasm.wasm'
+  'assets/vendor/sql.js/sql-wasm.wasm',
+  'assets/js/app.js',
+  'assets/css/app.css'
 ];
 
 // The install handler takes care of precaching the resources we always need.
