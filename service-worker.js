@@ -10,7 +10,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-const PRECACHE = 'precache-08.02.19.1';
+const PRECACHE = 'precache-12.06.19.1';
 const RUNTIME = 'runtime';
 
 // A list of local resources we always want to be cached.
@@ -22,13 +22,13 @@ const PRECACHE_URLS = [
   'assets/img/favicon-32x32.png',
   'assets/img/favicon-16x16.png',
   'assets/img/android-chrome-192x192.png',
-  'assets/vendor/leaflet-1.5.1/images/layers.png',
-  'assets/vendor/leaflet-1.5.1/images/layers-2x.png',
-  'assets/vendor/leaflet-1.5.1/images/marker-icon.png',
-  'assets/vendor/leaflet-1.5.1/images/marker-icon-2x.png',
-  'assets/vendor/leaflet-1.5.1/images/marker-shadow.png',
-  'assets/vendor/leaflet-1.5.1/leaflet.css',
-  'assets/vendor/leaflet-1.5.1/leaflet.js',
+  'assets/vendor/leaflet-1.6.0/images/layers.png',
+  'assets/vendor/leaflet-1.6.0/images/layers-2x.png',
+  'assets/vendor/leaflet-1.6.0/images/marker-icon.png',
+  'assets/vendor/leaflet-1.6.0/images/marker-icon-2x.png',
+  'assets/vendor/leaflet-1.6.0/images/marker-shadow.png',
+  'assets/vendor/leaflet-1.6.0/leaflet.css',
+  'assets/vendor/leaflet-1.6.0/leaflet.js',
   'assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.css',
   'assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.js',
   'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js',
