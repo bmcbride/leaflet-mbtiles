@@ -17,6 +17,9 @@ L.Control.AddFile = L.Control.extend({
       } else if (file.name.endsWith(".geojson") || file.name.endsWith(".kml") || file.name.endsWith(".gpx")) {
         const format = file.name.split(".").pop();
         loadVector(file, name, format);
+      } else {
+        alert("MBTiles, GeoJSON, KML, and GPX files supported.");
+        hideLoader();
       }
       this.value = "";
     }, false);
@@ -33,7 +36,7 @@ L.control.addfile = function(opts) {
 /*** end custom control ***/
 
 const map = L.map("map", {
-  zoomSnap: 0.5,
+  zoomSnap: 0,
   maxZoom: 22,
   zoomControl: false
 }).fitWorld();
