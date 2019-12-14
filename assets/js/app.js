@@ -104,6 +104,10 @@ const controls = {
 
   fileCtrl: L.control.addfile({
     position: "topleft"
+  }).addTo(map),
+
+  scaleCtrl: L.control.scale({
+    metric: false
   }).addTo(map)
 };
 
