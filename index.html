@@ -4,27 +4,172 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="description" content="A simple map viewer, built for the mobile web">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#0084e7">
+    <meta name="description" content="">
     <meta name="author" content="Bryan McBride">
-    <title>Map Viewer</title>
+    <title>GPS Map</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+    <link rel="stylesheet" href="assets/vendor/framework7-5.4.0/css/framework7.bundle.min.css">
     <link rel="stylesheet" href="assets/vendor/leaflet-1.6.0/leaflet.css">
-    <link rel="stylesheet" href="assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.css">
-    <link rel="stylesheet" href="assets/vendor/fontawesome-free-5.10.0-web/css/all.min.css">
     <link rel="stylesheet" href="assets/css/app.css">
   </head>
-  <body>
-      
-    <div id="map"></div>
-    <script src="assets/vendor/sql.js/sql-wasm.js"></script>
+  <body oncontextmenu="return false;">
+    <div id="app">
+      <div class="panel panel-left panel-cover">
+        <div class="view">
+          <div class="page">
+            <div class="navbar">
+              <div class="navbar-bg"></div>
+              <div class="navbar-inner">
+                <div class="title">Welcome!</div>
+                <div class="right">
+                  <a href="#" class="link icon-only panel-close" data-panel="left">
+                    <i class="icon material-icons">close</i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="page-content">
+              <div class="block-title">Open Source Libraries</div>
+              <div class="list links-list">
+                <ul>
+                  <li>
+                    <a href="https://framework7.io/" class="external">Framework7</a>
+                  </li>
+                  <li>
+                    <a href="https://leafletjs.com/" class="external">Leaflet</a>
+                  </li>
+                  <li>
+                    <a href="https://localforage.github.io/localForage/" class="external">localForage</a>
+                  </li>
+                  <li>
+                    <a href="https://material.io/icons/" class="external">Material Icons</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="block-title">Credits</div>
+              <div class="list simple-list">
+                <ul>
+                  <li>Developed by Bryan McBride</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Your main view, should have "view-main" class -->
+      <div id="view-home" class="view view-main view-init">
+        <!-- Page, data-name contains page name which can be used in page callbacks -->
+        <div class="page" data-name="index">
+          <!-- Top Navbar -->
+          <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner sliding">
+              <div class="left">
+                <a href="#" class="link icon-only panel-open" data-panel="left">
+                  <i class="icon material-icons">menu</i>
+                </a>
+              </div>  
+              <div class="title sliding">GPS Map</div>
+                <div class="right">
+                  <a class="link icon-only searchbar-enable" data-searchbar=".maplist-searchbar">
+                    <i class="icon material-icons">search</i>
+                  </a>
+                  <!-- <a href="#" class="link icon-only" onclick="fileInput.click();">
+                    <i class="icon material-icons">add</i>
+                  </a> -->
+                </div>
+                <form data-search-container=".search-list" data-search-in=".item-title" class="searchbar searchbar-expandable maplist-searchbar searchbar-init">
+                  <div class="searchbar-inner">
+                    <div class="searchbar-input-wrap">
+                      <input type="search" placeholder="Search"/>
+                      <i class="searchbar-icon"></i>
+                      <span class="input-clear-button"></span>
+                    </div>
+                    <span class="searchbar-disable-button">Cancel</span>
+                  </div>
+                </form>
+              </div>
+          </div>
+          <!-- <div class="fab fab-right-bottom">
+            <a href="#" onclick="fileInput.click();">
+              <i class="icon material-icons">add</i>
+            </a>
+          </div> -->
+          <div class="fab fab-right-bottom" id="add-fab">
+            <a href="#">
+              <!-- First icon is visible when Speed Dial actions are closed -->
+              <i class="icon material-icons">add</i>
+              <!-- Second icon is visible when Speed Dial actions are opened -->
+              <i class="icon material-icons">close</i>
+            </a>
+            <!-- Speed Dial action buttons -->
+            <div class="fab-buttons fab-buttons-top">
+              <a href="#" class="fab-label-button" onclick="fileInput.click(); app.fab.close('#add-fab');">
+                <i class="icon material-icons">sd_storage</i>
+                <span class="fab-label">MBTiles file on device</span>
+              </a>
+              <a href="#" class="fab-label-button">
+                <i class="icon material-icons">link</i>
+                <span class="fab-label">MBTiles file from URL</span>
+              </a>
+            </div>
+          </div>
+          <div class="page-content">
+            <div class="searchbar-backdrop"></div>
+            <div class="list simple-list searchbar-not-found">
+              <ul>
+                <li>Nothing found</li>
+              </ul>
+            </div>
+            
+            <div class="list sortable search-list searchbar-found">
+              <ul id="map-list"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map Popup -->
+      <div class="popup popup-tablet-fullscreen" id="map-popup">
+        <div class="view">
+          <div class="page" data-name="map">
+            <div class="navbar">
+              <div class="navbar-bg"></div>
+              <div class="navbar-inner">
+                <div class="left">
+                  <a href="#" class="link popup-close">
+                    <i class="icon material-icons">arrow_back</i>
+                  </a>
+                </div>
+                <div class="title" id="map-title"></div>
+                <div class="right">
+                  <a href="#" class="link icon-only" onclick="map.fitBounds(overLays.getLayers()[0].options.bounds);">
+                    <i class="icon material-icons">zoom_out_map</i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="fab fab-right-bottom" id="gps-fab"></div>
+            <div class="page-content">
+              <div id="map"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/vendor/framework7-5.4.0/js/framework7.bundle.min.js"></script>
+    <script src="assets/vendor/sqljs-1.1.0/sql-wasm.js"></script>
+    <script src="assets/vendor/localForage-1.7.3/localforage.min.js"></script>
     <script src="assets/vendor/leaflet-1.6.0/leaflet.js"></script>
     <script src="assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.js"></script>
     <script src="assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js"></script>
-    <script src="assets/vendor/togeojson/togeojson.js"></script>
     <script src="assets/js/app.js"></script>
     <script>
       if ("serviceWorker" in navigator) {

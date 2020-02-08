@@ -1,4 +1,3 @@
-/*jshint esversion: 6 */
 /*
  Copyright 2016 Google Inc. All Rights Reserved.
  Licensed under the Apache License, Version 2.0 (the 'License');
@@ -11,11 +10,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-
-// Names of the two caches used in this version of the service worker.
-// Change to v2, etc. when you update any of the local resources, which will
-// in turn trigger the install event again.
-const PRECACHE = 'precache-02.08.20.1';
+const PRECACHE = 'precache-12.14.19.1';
 const RUNTIME = 'runtime';
 
 // A list of local resources we always want to be cached.
@@ -27,7 +22,6 @@ const PRECACHE_URLS = [
   'assets/img/favicon-32x32.png',
   'assets/img/favicon-16x16.png',
   'assets/img/android-chrome-192x192.png',
-  'assets/fonts/MaterialIcons-Regular.woff2',
   'assets/vendor/leaflet-1.6.0/images/layers.png',
   'assets/vendor/leaflet-1.6.0/images/layers-2x.png',
   'assets/vendor/leaflet-1.6.0/images/marker-icon.png',
@@ -38,9 +32,11 @@ const PRECACHE_URLS = [
   'assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.css',
   'assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.js',
   'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js',
-  'assets/vendor/sqljs-1.1.0/sql-wasm.js',
-  'assets/vendor/sqljs-1.1.0/sql-wasm.wasm',
-  'assets/vendor/localForage-1.7.3/localforage.min.js',
+  'assets/vendor/fontawesome-free-5.10.0-web/css/all.min.css',
+  'assets/vendor/fontawesome-free-5.10.0-web/webfonts/fa-solid-900.ttf',
+  'assets/vendor/fontawesome-free-5.10.0-web/webfonts/fa-solid-900.woff2',
+  'assets/vendor/sql.js/sql-wasm.js',
+  'assets/vendor/sql.js/sql-wasm.wasm',
   'assets/js/app.js',
   'assets/css/app.css'
 ];
@@ -48,7 +44,7 @@ const PRECACHE_URLS = [
 // The install handler takes care of precaching the resources we always need.
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(PRECACHE)
+    caches.open(PRECACHE, 'map-cache')
       .then(cache => cache.addAll(PRECACHE_URLS))
       .then(self.skipWaiting())
   );
@@ -56,7 +52,7 @@ self.addEventListener('install', event => {
 
 // The activate handler takes care of cleaning up old caches.
 self.addEventListener('activate', event => {
-  const currentCaches = [PRECACHE];
+  const currentCaches = [PRECACHE, RUNTIME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return cacheNames.filter(cacheName => !currentCaches.includes(cacheName));
