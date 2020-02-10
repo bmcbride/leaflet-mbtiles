@@ -25,8 +25,14 @@ const app = new Framework7({
       el: "#map-popup",
       on: {
         open: function() {
-          // locateCtrl.start();
+          $$("#map-title").html(sessionStorage.getItem("activeLayer"));
           map.invalidateSize();
+        },
+        opened: function() {
+          loadMap();
+        },
+        closed: function() {
+          overLays.clearLayers();
         }
       }
     }
@@ -88,10 +94,9 @@ fileInput.style.display = "none";
 
 fileInput.addEventListener("change", function () {
   const file = fileInput.files[0];
-  const name = file.name.split(".").slice(0, -1).join(".");
 
   if (file.name.endsWith(".mbtiles")) {
-    saveMap(file, name);
+    loadFile(file);
   } else {
     alert("Only .mbtiles files supported!");
   }
@@ -111,42 +116,52 @@ $$(".gps-btn").on("click", function (e) {
 $$(document).on("taphold", ".overlay", function() {
   const name = $$(this).find("[name=overlay]").attr("data-name");
   const li = $$(this);
-  app.actions.create({
-    buttons: [{
-        text: "Delete Map",
-        color: "red",
-        onClick: function () {
-          deleteMap(name, li);
-        }
-      }, {
-        text: "Cancel"
-      }
-    ]
-  }).open();
+  app.dialog.confirm("Delete <b>" + name + "</b> from your device?", null, function() {
+    overLays.clearLayers();
+    storage.removeItem(name).then(function () {
+      li.remove();
+    });
+  });
 });
 
-function saveMap(file, name) {
-  const reader = new FileReader();
+function fetchFile() {
+  app.dialog.prompt("MBTiles file URL", null, function (url) {
+    app.progressbar.show();
+    fetch(url).then(response => {
+      return response.arrayBuffer();
+    }).then(buffer => {
+      const db = new SQL.Database(new Uint8Array(buffer));
+      saveMap(db, buffer);
+    }).catch(err => {
+      console.log(err);
+    })
+  });
+}
 
+function loadFile(file) {
+  const reader = new FileReader();
   reader.onload = function(e) {
     const db = new SQL.Database(new Uint8Array(reader.result));
-    const metadata = db.exec("SELECT value FROM metadata WHERE name IN ('name', 'description', 'bounds') ORDER BY name DESC");
-    const key = metadata[0].values[0][0];
-    const value = {
-      name: metadata[0].values[0][0] ? metadata[0].values[0][0] : name,
-      description: metadata[0].values[1][0],
-      bounds: metadata[0].values[2][0],
-      mbtiles: reader.result
-    };
-
-    storage.setItem(key, value).then(function (value) {
-      loadSavedMaps();
-    }).catch(function(err) {
-      alert("Error saving map!");
-    });
+    saveMap(db, reader.result);
   }
-
   reader.readAsArrayBuffer(file);
+}
+
+function saveMap(db, file) {
+  const metadata = db.exec("SELECT value FROM metadata WHERE name IN ('name', 'description', 'bounds') ORDER BY name DESC");
+  const key = metadata[0].values[0][0];
+  const value = {
+    name: metadata[0].values[0][0] ? metadata[0].values[0][0] : name,
+    description: metadata[0].values[1][0],
+    bounds: metadata[0].values[2][0],
+    mbtiles: file
+  };
+
+  storage.setItem(key, value).then(function (value) {
+    loadSavedMaps();
+  }).catch(function(err) {
+    alert("Error saving map!");
+  });
 }
 
 function loadSavedMaps() {
@@ -154,24 +169,31 @@ function loadSavedMaps() {
   const maps = [];
   storage.length().then(function(numberOfKeys) {
     if (numberOfKeys > 0) {
+      var size = 0;
+  		var files = 0;
       storage.iterate(function(value, key, iterationNumber) {
+        files = iterationNumber;
+        size += value.mbtiles.byteLength;
         maps.push({
           key: key,
           value: value
         });
       }).then(function() {
+        // console.log("DB Size: " + files + " files, " + formatSize(size));
+        
         maps.sort(function(a, b) {
           return (a.key.toUpperCase() < b.key.toUpperCase()) ? -1 : (a.key.toUpperCase() > b.key.toUpperCase()) ? 1 : 0;
         });
         
         maps.forEach(function(map, index) {
           const li = `<li class="overlay">
-            <a href="#" class="item-link item-content" name="overlay" data-name="${map.value.name}" onclick="loadMap('${map.value.name}'); app.views.main.router.navigate('/map/');">
+            <a href="#" class="item-link item-content" name="overlay" data-name="${map.value.name}" onclick="sessionStorage.setItem('activeLayer', '${map.value.name}'); app.views.main.router.navigate('/map/');">
               <div class="item-inner">
                 <div class="item-title">
                   ${map.value.name}
                   <div class="item-footer">${map.value.description}</div>
                 </div>
+                <div class="item-after"> <span class="badge">${formatSize(map.value.mbtiles.byteLength)}</span></div>
               </div>
             </a>
           </li>`;
@@ -179,7 +201,8 @@ function loadSavedMaps() {
           $$("#map-list").append(li);
         });
     
-        app.preloader.hide();
+        // app.preloader.hide();
+        app.progressbar.hide();
       }).catch(function(err) {
         alert("Error loading saved maps!");
       });
@@ -189,20 +212,19 @@ function loadSavedMaps() {
           <a class="item-link list-button" onclick="app.fab.open('#add-fab');">No maps saved. Add a map now!</a>
         </li>
       `);
-      app.preloader.hide();
+      // app.preloader.hide();
+      app.progressbar.hide();
     }
   }).catch(function(err) {
     console.log(err);
   });
 }
 
-function loadMap(key) {
-  app.preloader.show();
-  sessionStorage.setItem("activeLayer", key);
+function loadMap() {
+  // app.preloader.show();
+  app.progressbar.show();
+  const key = sessionStorage.getItem("activeLayer");
   storage.getItem(key).then(function (value) {
-    $$("#map-title").html(value.name);
-    overLays.clearLayers();
-    
     const layer = L.tileLayer.mbTiles(value.mbtiles, {
       zIndex: 10,
       autoScale: true,
@@ -210,24 +232,26 @@ function loadMap(key) {
       updateWhenIdle: false
     }).on("databaseloaded", function(e) {
       $$(".leaflet-control-attribution").html($$(".leaflet-control-attribution").html().replace("<a", "<a class='external' target='_blank'"));
-      app.preloader.hide();
+      // app.preloader.hide();
+      app.progressbar.hide();
     });
     overLays.addLayer(layer);
   });
 }
 
-function deleteMap(name, li) {
-  var cfm = confirm(`Remove ${name}?`);
-  if (cfm == true) {
-    overLays.clearLayers();
-    storage.removeItem(name).then(function () {
-      li.remove();
-    });
+function formatSize(size) {
+  size = size / 1000;
+  if (size > 1000) {
+    size = (size/1000).toFixed(1) + " MB";
+  } else {
+    size = size.toFixed(1) + " KB";
   }
+  return size;
 }
 
 app.on("init", function() {
-  app.preloader.show();
+  // app.preloader.show();
+  app.progressbar.show();
   initSqlJs({
     locateFile: function() {
       return "assets/vendor/sqljs-1.1.0/sql-wasm.wasm";
@@ -235,7 +259,7 @@ app.on("init", function() {
   }).then(function(SQL){
     loadSavedMaps();
     if (app.views.current.router.currentRoute.url == "/map/" && sessionStorage.getItem("activeLayer")) {
-      loadMap(sessionStorage.getItem("activeLayer"));
+      loadMap();
     }
   });
 })
