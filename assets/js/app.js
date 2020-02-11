@@ -25,13 +25,14 @@ const app = new Framework7({
       el: "#map-popup",
       on: {
         open: function() {
-          $$("#map-title").html(sessionStorage.getItem("activeLayer"));
+          // $$("#map-title").html(sessionStorage.getItem("activeLayer"));
           map.invalidateSize();
         },
         opened: function() {
           loadMap();
         },
         closed: function() {
+          // $$("#map-title").html(null);
           overLays.clearLayers();
         }
       }
@@ -114,14 +115,87 @@ $$(".gps-btn").on("click", function (e) {
 });
 
 $$(document).on("taphold", ".overlay", function() {
-  const name = $$(this).find("[name=overlay]").attr("data-name");
+  // const name = li.find("[name=overlay]").attr("data-name");
   const li = $$(this);
-  app.dialog.confirm("Delete <b>" + name + "</b> from your device?", null, function() {
-    overLays.clearLayers();
-    storage.removeItem(name).then(function () {
-      li.remove();
-    });
-  });
+  const key = li.attr("data-key");
+  const name = li.find(".item-title .name").html();
+  const description = li.find(".item-title .item-footer").html();
+  app.actions.create({
+    buttons: [{	
+        text: "Delete Map",
+        color: "red",
+        onClick: function () {
+          app.dialog.confirm("Delete <b>" + name + "</b> from your device?", null, function() {
+            overLays.clearLayers();
+            storage.removeItem(name).then(function () {
+              li.remove();
+            });
+          });
+        }	
+      }, {	
+        text: "Rename Map",
+        onClick: function () {
+          // deleteMap(name, li);
+          // li.find(".item-title .name").html("Renamed");
+          // console.log(title);
+          app.dialog.create({
+            //text: 'Hello World',
+            content: `<div class="list no-hairlines-md">
+              <ul>
+                <li class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Name</div>
+                    <div class="item-input-wrap">
+                      <input id="map-name" type="text" value="${name}">
+                    </div>
+                  </div>
+                </li>
+                <li class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Description</div>
+                    <div class="item-input-wrap">
+                      <textarea id="map-description">${description}</textarea>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>`,
+          buttons: [{
+            text: "CANCEL"
+          },{
+            text: "OK",
+            close: false,
+            onClick: function(dialog, e) {
+              const name = $$("#map-name").val();
+              const description = $$("#map-description").val();
+              if (name.length > 0) {
+                app.progressbar.show();
+                storage.getItem(key).then(function (value) {
+                  value.name = name;
+                  value.description = description;
+                  storage.setItem(key, value).then(function (value) {
+                    li.find(".item-title .name").html(name);
+                    li.find(".item-title .item-footer").html(description);
+                    app.progressbar.hide();
+                    app.dialog.close();
+                  });
+                });
+              } else {
+                app.toast.create({
+                  text: "Map Name required!",
+                  closeButton: true,
+                  closeTimeout: 2000
+                }).open();
+              }
+            }
+          }]
+        }).open()
+        }	
+      }, {	
+        text: "Cancel"	
+      }	
+    ]	
+  }).open();
 });
 
 function fetchFile() {
@@ -169,28 +243,22 @@ function loadSavedMaps() {
   const maps = [];
   storage.length().then(function(numberOfKeys) {
     if (numberOfKeys > 0) {
-      var size = 0;
-  		var files = 0;
       storage.iterate(function(value, key, iterationNumber) {
-        files = iterationNumber;
-        size += value.mbtiles.byteLength;
         maps.push({
           key: key,
           value: value
         });
       }).then(function() {
-        // console.log("DB Size: " + files + " files, " + formatSize(size));
-        
         maps.sort(function(a, b) {
           return (a.key.toUpperCase() < b.key.toUpperCase()) ? -1 : (a.key.toUpperCase() > b.key.toUpperCase()) ? 1 : 0;
         });
         
         maps.forEach(function(map, index) {
-          const li = `<li class="overlay">
-            <a href="#" class="item-link item-content" name="overlay" data-name="${map.value.name}" onclick="sessionStorage.setItem('activeLayer', '${map.value.name}'); app.views.main.router.navigate('/map/');">
+          const li = `<li class="overlay" data-key="${map.key}">
+            <a href="#" class="item-link item-content" onclick="$$('#map-title').html('${map.value.name}'); sessionStorage.setItem('activeLayer', '${map.key}'); app.views.main.router.navigate('/map/');">
               <div class="item-inner">
                 <div class="item-title">
-                  ${map.value.name}
+                  <span class="name">${map.value.name}</span>
                   <div class="item-footer">${map.value.description}</div>
                 </div>
                 <div class="item-after"> <span class="badge">${formatSize(map.value.mbtiles.byteLength)}</span></div>
@@ -225,6 +293,7 @@ function loadMap() {
   app.progressbar.show();
   const key = sessionStorage.getItem("activeLayer");
   storage.getItem(key).then(function (value) {
+    $$("#map-title").html(value.name);
     const layer = L.tileLayer.mbTiles(value.mbtiles, {
       zIndex: 10,
       autoScale: true,
