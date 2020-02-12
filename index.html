@@ -81,9 +81,6 @@
                   <a class="link icon-only searchbar-enable" data-searchbar=".maplist-searchbar">
                     <i class="icon material-icons">search</i>
                   </a>
-                  <!-- <a href="#" class="link icon-only" onclick="fileInput.click();">
-                    <i class="icon material-icons">add</i>
-                  </a> -->
                 </div>
                 <form data-search-container=".search-list" data-search-in=".item-title" class="searchbar searchbar-expandable maplist-searchbar searchbar-init">
                   <div class="searchbar-inner">
@@ -98,7 +95,7 @@
               </div>
           </div>
           <!-- <div class="fab fab-right-bottom">
-            <a href="#" onclick="fileInput.click();">
+            <a href="#" onclick="rasterInput.click();">
               <i class="icon material-icons">add</i>
             </a>
           </div> -->
@@ -111,7 +108,7 @@
             </a>
             <!-- Speed Dial action buttons -->
             <div class="fab-buttons fab-buttons-top">
-              <a href="#" class="fab-label-button" onclick="fileInput.click(); app.fab.close('#add-fab');">
+              <a href="#" class="fab-label-button" onclick="rasterInput.click(); app.fab.close('#add-fab');">
                 <i class="icon material-icons">sd_storage</i>
                 <span class="fab-label">MBTiles file on device</span>
               </a>
@@ -150,7 +147,10 @@
                 </div>
                 <div class="title" id="map-title"></div>
                 <div class="right">
-                  <a href="#" class="link icon-only" onclick="map.fitBounds(overLays.getLayers()[0].options.bounds);">
+                  <a href="#" class="link icon-only" onclick="vectorInput.click();">
+                    <i class="icon material-icons">place</i>
+                  </a>
+                  <a href="#" class="link icon-only" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">
                     <i class="icon material-icons">zoom_out_map</i>
                   </a>
                 </div>

@@ -33,7 +33,9 @@ const app = new Framework7({
         },
         closed: function() {
           // $$("#map-title").html(null);
-          overLays.clearLayers();
+          layers.raster.clearLayers();
+          layers.vector.clearLayers();
+          map.removeControl(controls.layerCtrl);
         }
       }
     }
@@ -50,63 +52,86 @@ const map = L.map("map", {
   attributionControl: false
 }).fitWorld();
 
-const overLays = L.layerGroup().addTo(map);
+const layers = {
+  raster: L.layerGroup().addTo(map),
+  vector: L.featureGroup().addTo(map)
+};
 
-const attributionCtrl = L.control.attribution({
-  prefix: null,
-  position: "bottomleft"
-}).addTo(map);
+const controls = {
+  attributionCtrl: L.control.attribution({
+    prefix: null,
+    position: "bottomleft"
+  }).addTo(map),
 
-const locateCtrl = L.control.locate({
-  icon: "gps_fixed",
-  iconLoading: "gps_not_fixed",
-  setView: "untilPan",
-  cacheLocation: true,
-  position: "topleft",
-  flyTo: false,
-  keepCurrentZoomLevel: true,
-  circleStyle: {
-    interactive: false
-  },
-  markerStyle: {
-    interactive: false
-  },
-  locateOptions: {
-    enableHighAccuracy: true/*,
-    maxZoom: 17*/
-  },
-  iconElementTag: "i",
-  createButtonCallback: function (container, options) {
-    const link = L.DomUtil.create("a", "gps-btn", $$("#gps-fab")[0]);
-    link.title = options.strings.title;
-    const icon = L.DomUtil.create(options.iconElementTag, "icon material-icons", link);
-    return { link: link, icon: icon };
-  },
-  onLocationError: function(e) {
-    alert(e.message);
-  }
-}).addTo(map);
-locateCtrl.start();
+  locateCtrl: L.control.locate({
+    icon: "gps_fixed",
+    iconLoading: "gps_not_fixed",
+    setView: "untilPan",
+    cacheLocation: true,
+    position: "topleft",
+    flyTo: false,
+    keepCurrentZoomLevel: true,
+    circleStyle: {
+      interactive: false
+    },
+    markerStyle: {
+      interactive: false
+    },
+    locateOptions: {
+      enableHighAccuracy: true/*,
+      maxZoom: 17*/
+    },
+    iconElementTag: "i",
+    createButtonCallback: function (container, options) {
+      const link = L.DomUtil.create("a", "gps-btn", $$("#gps-fab")[0]);
+      link.title = options.strings.title;
+      const icon = L.DomUtil.create(options.iconElementTag, "icon material-icons", link);
+      return { link: link, icon: icon };
+    },
+    onLocationError: function(e) {
+      alert(e.message);
+    }
+  }).addTo(map),
 
+  layerCtrl: L.control.layers(null, {"GeoJSON": layers.vector}, {collapsed: false})
+};
 
-const fileInput = L.DomUtil.create("input", "hidden");
-fileInput.type = "file";
-fileInput.accept = ".mbtiles";
-fileInput.style.display = "none";
+controls.locateCtrl.start();
 
-fileInput.addEventListener("change", function () {
-  const file = fileInput.files[0];
+const rasterInput = L.DomUtil.create("input", "hidden");
+rasterInput.type = "file";
+rasterInput.accept = ".mbtiles";
+rasterInput.style.display = "none";
+
+rasterInput.addEventListener("change", function () {
+  const file = rasterInput.files[0];
 
   if (file.name.endsWith(".mbtiles")) {
-    loadFile(file);
+    loadRaster(file);
   } else {
     alert("Only .mbtiles files supported!");
   }
   this.value = "";
 }, false);
 
+const vectorInput = L.DomUtil.create("input", "hidden");
+vectorInput.type = "file";
+vectorInput.accept = ".geojson";
+vectorInput.style.display = "none";
+
+vectorInput.addEventListener("change", function () {
+  const file = vectorInput.files[0];
+
+  if (file.name.endsWith(".geojson")) {
+    loadVector(file);
+  } else {
+    alert("Only .geojson files supported!");
+  }
+  this.value = "";
+}, false);
+
 $$(".gps-btn").on("click", function (e) {
-  if (!locateCtrl._active) {
+  if (!controls.locateCtrl._active) {
     $$(".gps-btn i").removeClass("gps_fixed");
     $$(".gps-btn i").addClass("gps_not_fixed");
   } else {
@@ -127,7 +152,7 @@ $$(document).on("taphold", ".overlay", function() {
         color: "red",
         onClick: function () {
           app.dialog.confirm("Delete <b>" + name + "</b> from your device?", null, function() {
-            overLays.clearLayers();
+            layers.raster.clearLayers();
             storage.removeItem(name).then(function () {
               li.remove();
             });
@@ -136,11 +161,7 @@ $$(document).on("taphold", ".overlay", function() {
       }, {	
         text: "Rename Map",
         onClick: function () {
-          // deleteMap(name, li);
-          // li.find(".item-title .name").html("Renamed");
-          // console.log(title);
           app.dialog.create({
-            //text: 'Hello World',
             content: `<div class="list no-hairlines-md">
               <ul>
                 <li class="item-content item-input">
@@ -213,13 +234,41 @@ function fetchFile() {
   });
 }
 
-function loadFile(file) {
+function loadRaster(file) {
   const reader = new FileReader();
   reader.onload = function(e) {
     const db = new SQL.Database(new Uint8Array(reader.result));
     saveMap(db, reader.result);
   }
   reader.readAsArrayBuffer(file);
+}
+
+function loadVector(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const geojson = JSON.parse(reader.result);
+    layers.vector.clearLayers();
+
+    L.geoJSON(geojson, {  
+      onEachFeature: function (feature, layer) {
+        let table = "<div style='overflow:auto;'><table>";
+        for (const key in feature.properties) {
+          if (feature.properties.hasOwnProperty(key)) {
+            table += `<tr><th>${key.toUpperCase()}</th><td>${formatProperty(feature.properties[key])}</td></tr>`;
+          }
+        }
+        table += "</table></div>";
+        layer.bindPopup(table, {
+          maxHeight: 300,
+          maxWidth: 250
+        });
+      }
+      
+    }).addTo(layers.vector);
+    map.addControl(controls.layerCtrl);
+    map.fitBounds(layers.vector.getBounds());
+  }
+  reader.readAsText(file);
 }
 
 function saveMap(db, file) {
@@ -305,7 +354,7 @@ function loadMap() {
       // app.preloader.hide();
       app.progressbar.hide();
     });
-    overLays.addLayer(layer);
+    layers.raster.addLayer(layer);
   });
 }
 
@@ -317,6 +366,14 @@ function formatSize(size) {
     size = size.toFixed(1) + " KB";
   }
   return size;
+}
+
+function formatProperty(value) {
+  if (typeof value == "string" && (value.indexOf("http") === 0 || value.indexOf("https") === 0)) {
+    return `<a class="external" href="${value}" target="_blank">${value}</a>`;
+  } else {
+    return value;
+  }
 }
 
 app.on("init", function() {
