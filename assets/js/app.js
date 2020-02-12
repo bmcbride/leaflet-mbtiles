@@ -64,6 +64,7 @@ const locateCtrl = L.control.locate({
   cacheLocation: true,
   position: "topleft",
   flyTo: false,
+  keepCurrentZoomLevel: true,
   circleStyle: {
     interactive: false
   },
@@ -71,8 +72,8 @@ const locateCtrl = L.control.locate({
     interactive: false
   },
   locateOptions: {
-    enableHighAccuracy: true,
-    maxZoom: 17
+    enableHighAccuracy: true/*,
+    maxZoom: 17*/
   },
   iconElementTag: "i",
   createButtonCallback: function (container, options) {
