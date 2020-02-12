@@ -141,30 +141,31 @@ $$(".gps-btn").on("click", function (e) {
 });
 
 $$(document).on("taphold", ".overlay", function() {
-  // const name = li.find("[name=overlay]").attr("data-name");
   const li = $$(this);
   const key = li.attr("data-key");
   const name = li.find(".item-title .name").html();
   const description = li.find(".item-title .item-footer").html();
   app.actions.create({
     buttons: [{	
-        text: "Delete Map",
+        text: "Delete",
         color: "red",
         onClick: function () {
           app.dialog.confirm("Delete <b>" + name + "</b> from your device?", null, function() {
             layers.raster.clearLayers();
             storage.removeItem(name).then(function () {
-              li.remove();
+              // li.remove();
+              loadSavedMaps();
             });
           });
         }	
       }, {	
-        text: "Rename Map",
+        text: "Rename",
+        color: "blue",
         onClick: function () {
           app.dialog.create({
             content: `<div class="list no-hairlines-md">
               <ul>
-                <li class="item-content item-input">
+                <li class="item-content item-input" style="padding: 0px;">
                   <div class="item-inner">
                     <div class="item-title item-label">Name</div>
                     <div class="item-input-wrap">
@@ -172,7 +173,7 @@ $$(document).on("taphold", ".overlay", function() {
                     </div>
                   </div>
                 </li>
-                <li class="item-content item-input">
+                <li class="item-content item-input" style="padding: 0px;">
                   <div class="item-inner">
                     <div class="item-title item-label">Description</div>
                     <div class="item-input-wrap">
@@ -230,7 +231,7 @@ function fetchFile() {
       saveMap(db, buffer);
     }).catch(err => {
       console.log(err);
-    })
+    });
   });
 }
 
@@ -289,16 +290,20 @@ function saveMap(db, file) {
 }
 
 function loadSavedMaps() {
-  $$("#map-list").empty();
+  app.progressbar.show();
   const maps = [];
+  let size = 0;
+  $$("#map-list").empty();
   storage.length().then(function(numberOfKeys) {
     if (numberOfKeys > 0) {
       storage.iterate(function(value, key, iterationNumber) {
+        size += value.mbtiles.byteLength;
         maps.push({
           key: key,
           value: value
         });
       }).then(function() {
+        $$("#database-size").html(formatSize(size));
         maps.sort(function(a, b) {
           return (a.key.toUpperCase() < b.key.toUpperCase()) ? -1 : (a.key.toUpperCase() > b.key.toUpperCase()) ? 1 : 0;
         });
@@ -325,6 +330,7 @@ function loadSavedMaps() {
         alert("Error loading saved maps!");
       });
     } else {
+      $$("#database-size").html(0);
       $$("#map-list").append(`
         <li>
           <a class="item-link list-button" onclick="app.fab.open('#add-fab');">No maps saved. Add a map now!</a>
@@ -376,14 +382,37 @@ function formatProperty(value) {
   }
 }
 
+function emptyDatabase() {
+  app.dialog.confirm("Delete all saved maps?", null, function() {
+    app.progressbar.show();
+    storage.clear().then(function() {
+      loadSavedMaps();
+      app.progressbar.hide();
+    }).catch(function(err) {
+      console.log(err);
+    });
+  });
+}
+
 app.on("init", function() {
-  // app.preloader.show();
   app.progressbar.show();
   initSqlJs({
     locateFile: function() {
       return "assets/vendor/sqljs-1.1.0/sql-wasm.wasm";
     }
   }).then(function(SQL){
+    if (app.utils.parseUrlQuery(document.URL).map) {
+      const url = app.utils.parseUrlQuery(document.URL).map;
+      fetch(url).then(response => {
+        return response.arrayBuffer();
+      }).then(buffer => {
+        const db = new SQL.Database(new Uint8Array(buffer));
+        saveMap(db, buffer);
+        window.history.replaceState(null, null, window.location.pathname);
+      }).catch(err => {
+        console.log(err);
+      });
+    }
     loadSavedMaps();
     if (app.views.current.router.currentRoute.url == "/map/" && sessionStorage.getItem("activeLayer")) {
       loadMap();

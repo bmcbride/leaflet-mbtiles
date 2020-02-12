@@ -35,7 +35,28 @@
               </div>
             </div>
             <div class="page-content">
-              <div class="block-title">Open Source Libraries</div>
+              <div class="block-title text-color-blue">About</div>
+              <div class="block">
+                <p>Save MBTiles maps to your device for offline navigation.</p>
+              </div>
+              <div class="block-title text-color-blue">Saved Maps</div>
+              <div class="list">
+                <ul>
+                  <li>
+                    <div class="item-content">
+                      <div class="item-inner">
+                        <div class="item-title" id="database-size">0</div>
+                        <div class="item-after">
+                          <a href="#" class="link icon-only panel-close" onclick="emptyDatabase();">
+                            <i class="icon material-icons color-red">delete</i>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div class="block-title text-color-blue">Open Source Libraries</div>
               <div class="list links-list">
                 <ul>
                   <li>
@@ -52,12 +73,12 @@
                   </li>
                 </ul>
               </div>
-              <div class="block-title">Credits</div>
+              <!-- <div class="block-title text-color-blue">Credits</div>
               <div class="list simple-list">
                 <ul>
                   <li>Developed by Bryan McBride</li>
                 </ul>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -171,10 +192,10 @@
     <script src="assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.js"></script>
     <script src="assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js"></script>
     <script src="assets/js/app.js"></script>
-    <script>
+    <!-- <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("service-worker.js");
       }
-    </script>
+    </script> -->
   </body>
 </html>
