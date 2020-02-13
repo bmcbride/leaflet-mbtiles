@@ -394,7 +394,29 @@ function emptyDatabase() {
   });
 }
 
+function iosChecks() {
+  if (app.device.ios) {
+    if (parseFloat(app.device.osVersion) < 11.3) {
+      app.dialog.alert("This app is not fully supported on devices running iOS < 11.3.", "Warning");
+    } else if (!app.device.standalone) {
+      if (!localStorage.getItem("dismissPrompt")) {
+        app.toast.create({
+          text: "Tap the <img src='assets/img/ios-share.png' height='18px'> button " + (app.device.ipad ? "at the top of the screen" : "below") + " to Add to Home Screen.",
+          closeButton: true,
+          position: app.device.ipad ? "center" : "bottom",
+          on: {
+            close: function () {
+              localStorage.setItem("dismissPrompt", true);
+            }
+          }
+        }).open();
+      } 
+    }
+  }
+}
+
 app.on("init", function() {
+  iosChecks();
   app.progressbar.show();
   initSqlJs({
     locateFile: function() {

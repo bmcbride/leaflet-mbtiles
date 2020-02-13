@@ -15,7 +15,7 @@
 // Names of the two caches used in this version of the service worker.
 // Change to v2, etc. when you update any of the local resources, which will
 // in turn trigger the install event again.
-const PRECACHE = 'precache-02.13.20.1';
+const PRECACHE = 'precache-02.13.20.2';
 const RUNTIME = 'runtime';
 
 // A list of local resources we always want to be cached.
@@ -27,6 +27,7 @@ const PRECACHE_URLS = [
   'assets/img/favicon-32x32.png',
   'assets/img/favicon-16x16.png',
   'assets/img/android-chrome-192x192.png',
+  'assets/img/ios-share.png',
   'assets/fonts/MaterialIcons-Regular.woff2',
   'assets/vendor/leaflet-1.6.0/images/layers.png',
   'assets/vendor/leaflet-1.6.0/images/layers-2x.png',
