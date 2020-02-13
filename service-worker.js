@@ -15,7 +15,7 @@
 // Names of the two caches used in this version of the service worker.
 // Change to v2, etc. when you update any of the local resources, which will
 // in turn trigger the install event again.
-const PRECACHE = 'precache-02.12.20.3';
+const PRECACHE = 'precache-02.13.20.1';
 const RUNTIME = 'runtime';
 
 // A list of local resources we always want to be cached.
@@ -37,8 +37,7 @@ const PRECACHE_URLS = [
   'assets/vendor/leaflet-1.6.0/leaflet.js',
   'assets/vendor/framework7-5.4.1/css/framework7.bundle.min.css',
   'assets/vendor/framework7-5.4.1/js/framework7.bundle.min.js',
-  'assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.css',
-  'assets/vendor/leaflet-locatecontrol-0.67.0/L.Control.Locate.min.js',
+  'assets/vendor/leaflet-locatecontrol-0.70.0/L.Control.Locate.min.js',
   'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js',
   'assets/vendor/sqljs-1.1.0/sql-wasm.js',
   'assets/vendor/sqljs-1.1.0/sql-wasm.wasm',

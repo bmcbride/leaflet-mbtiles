@@ -25,7 +25,6 @@ const app = new Framework7({
       el: "#map-popup",
       on: {
         open: function() {
-          // $$("#map-title").html(sessionStorage.getItem("activeLayer"));
           map.invalidateSize();
         },
         opened: function() {
@@ -36,6 +35,7 @@ const app = new Framework7({
           layers.raster.clearLayers();
           layers.vector.clearLayers();
           map.removeControl(controls.layerCtrl);
+          sessionStorage.removeItem("activeLayer");
         }
       }
     }
@@ -66,7 +66,7 @@ const controls = {
   locateCtrl: L.control.locate({
     icon: "gps_fixed",
     iconLoading: "gps_not_fixed",
-    setView: "untilPan",
+    setView: "untilPanOrZoom",
     cacheLocation: true,
     position: "topleft",
     flyTo: false,
