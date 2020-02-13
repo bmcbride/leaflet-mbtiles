@@ -305,7 +305,7 @@ function loadSavedMaps() {
       }).then(function() {
         $$("#database-size").html(formatSize(size));
         maps.sort(function(a, b) {
-          return (a.key.toUpperCase() < b.key.toUpperCase()) ? -1 : (a.key.toUpperCase() > b.key.toUpperCase()) ? 1 : 0;
+          return (a.value.name.toUpperCase() < b.value.name.toUpperCase()) ? -1 : (a.value.name.toUpperCase() > b.value.name.toUpperCase()) ? 1 : 0;
         });
         
         maps.forEach(function(map, index) {
