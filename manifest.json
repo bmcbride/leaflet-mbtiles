@@ -1,11 +1,11 @@
 {
   "name": "GPS Map",
   "short_name": "Maps",
-  "description": "An offline map viewer, built for the mobile web",
+  "description": "A simple map viewer, built for the mobile web",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color":  "#007aff",
-  "theme_color": "#007aff",
+  "background_color":  "#2196f3",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "assets/img/android-chrome-192x192.png",

@@ -1,62 +1,27 @@
-@font-face {
-  font-family: 'Material Icons';
-  font-style: normal;
-  font-weight: 400;
-  src: url(../fonts/MaterialIcons-Regular.woff2) format('woff2');
-}
-
-.material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-}
-
-/* body {
+html, body, #map {
   height: 100%;
   width: 100%;
-} */
-
-#map {
-  height: 100%;
-  width: 100%;
+  margin: 0;
 }
-
-.overlay {
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
+.leaflet-control-layers-overlays label div input {
+  float: left;
 }
-
-.list {
-  margin: 0px!important;
+.layer-name {
+  float: left;
 }
-
-.panel, .panel-backdrop {
-  z-index: 99999;
+.layer-buttons {
+  float: right;
 }
-
-.gps_fixed::after {
-  font-family: "Material Icons";
-  content: "gps_fixed";
+.layer-btn {
+  padding-left: 6px;
 }
-
-.gps_not_fixed::after {
-  font-family: "Material Icons";
-  content: "gps_not_fixed";
+.file-control-btn {
+  font-size: 1.4em;
+  color: #444;
+  cursor: pointer;
 }
-
-@media screen and (max-device-width: 320px) and (orientation: portrait){
-  .navbar .title {
-    font-size: 17px;
+@media (max-width: 768px) {
+  .leaflet-control-layers-list {
+    font-size: large;
   }
 }

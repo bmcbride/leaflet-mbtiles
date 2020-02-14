@@ -1,72 +1,91 @@
-const $$ = Dom7;
+/*** Begin custom input control for adding local file ***/
+L.Control.AddFile = L.Control.extend({
+  onAdd: function(map) {
+    fileInput = L.DomUtil.create("input", "hidden");
+    fileInput.type = "file";
+    fileInput.accept = ".mbtiles, .geojson, .kml, .gpx";
+    fileInput.style.display = "none";
+    
+    fileInput.addEventListener("change", function () {
+      showLoader();
 
-const storage = localforage.createInstance({
-  name: "maps",
-  storeName: "saved_maps"
-});
+      const file = fileInput.files[0];
+      const name = file.name.split(".").slice(0, -1).join(".");
 
-const app = new Framework7({
-  root: "#app",
-  theme: "md",
-  init: false,
-  view: {
-    stackPages: true,
-    pushState: true,
-    pushStateOnLoad: true
-  },
-  routes: [{
-    name: "home",
-    path: "/",
-    url: "index.html",
-  }, {
-    name: "map",
-    path: "/map/",
-    popup: {
-      el: "#map-popup",
-      on: {
-        open: function() {
-          map.invalidateSize();
-        },
-        opened: function() {
-          loadMap();
-        },
-        closed: function() {
-          // $$("#map-title").html(null);
-          layers.raster.clearLayers();
-          layers.vector.clearLayers();
-          map.removeControl(controls.layerCtrl);
-          sessionStorage.removeItem("activeLayer");
-        }
+      if (file.name.endsWith(".mbtiles")) {
+        loadRaster(file, name);
+      } else if (file.name.endsWith(".geojson") || file.name.endsWith(".kml") || file.name.endsWith(".gpx")) {
+        const format = file.name.split(".").pop();
+        loadVector(file, name, format);
+      } else {
+        alert("MBTiles, GeoJSON, KML, and GPX files supported.");
+        hideLoader();
       }
-    }
-  }],
-  touch: {
-    tapHold: true
+      this.value = "";
+    }, false);
+    
+    const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    div.innerHTML = "<a class='leaflet-bar-part leaflet-bar-part-single file-control-btn' title='Load File' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-map-marked-alt'></i></a>";
+    return div
   }
 });
+
+L.control.addfile = function(opts) {
+  return new L.Control.AddFile(opts);
+}
+/*** end custom control ***/
 
 const map = L.map("map", {
   zoomSnap: 0,
   maxZoom: 22,
-  zoomControl: false,
-  attributionControl: false
+  zoomControl: false
 }).fitWorld();
+map.attributionControl.setPrefix(null);
 
-const layers = {
-  raster: L.layerGroup().addTo(map),
-  vector: L.featureGroup().addTo(map)
+const baseLayers = {
+  "Streets": L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.@2xpng", {
+    maxNativeZoom: 18,
+    maxZoom: map.getMaxZoom(),
+    attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
+  }).addTo(map),
+
+  "Aerial": L.tileLayer.wms("https://orthos.dhses.ny.gov/ArcGIS/services/Latest/MapServer/WMSServer", {
+    layers: "0,1,2,3,4",
+    format: "image/png",
+    transparent: true,
+    maxNativeZoom: 18,
+    maxZoom: map.getMaxZoom(),
+    attribution: "<a href='https://gis.ny.gov/gateway/mg/webserv/webserv.html' class='external'>NYSDOP</a>"
+  }),
+  
+  "Topo": L.tileLayer("https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}", {
+    maxNativeZoom: 16,
+    maxZoom: map.getMaxZoom(),
+    attribution: "USGS",
+  }),
+
+  "Charts": L.tileLayer("https://tileservice.charts.noaa.gov/tiles/50000_1/{z}/{x}/{y}.png", {
+    maxNativeZoom: 18,
+    maxZoom: map.getMaxZoom(),
+    attribution: "NOAA",
+  }),
+
+  "None": L.tileLayer("", {
+    maxZoom: map.getMaxZoom()
+  })
 };
 
+const overlayLayers = {};
+
 const controls = {
-  attributionCtrl: L.control.attribution({
-    prefix: null,
-    position: "bottomleft"
+  layerCtrl: L.control.layers(baseLayers, null, {
+    collapsed: true,
+    position: "topright"
   }).addTo(map),
 
   locateCtrl: L.control.locate({
-    icon: "gps_fixed",
-    iconLoading: "gps_not_fixed",
-    setView: "untilPanOrZoom",
+    icon: "fa fa-crosshairs",
+    setView: "untilPan",
     cacheLocation: true,
     position: "topleft",
     flyTo: false,
@@ -79,183 +98,63 @@ const controls = {
     },
     locateOptions: {
       enableHighAccuracy: true/*,
-      maxZoom: 17*/
-    },
-    iconElementTag: "i",
-    createButtonCallback: function (container, options) {
-      const link = L.DomUtil.create("a", "gps-btn", $$("#gps-fab")[0]);
-      link.title = options.strings.title;
-      const icon = L.DomUtil.create(options.iconElementTag, "icon material-icons", link);
-      return { link: link, icon: icon };
+      maxZoom: 19*/
     },
     onLocationError: function(e) {
       alert(e.message);
     }
   }).addTo(map),
 
-  layerCtrl: L.control.layers(null, {"GeoJSON": layers.vector}, {collapsed: false})
+  fileCtrl: L.control.addfile({
+    position: "topleft"
+  }).addTo(map),
+
+  scaleCtrl: L.control.scale({
+    metric: false,
+    position: "bottomright"
+  })
 };
 
-controls.locateCtrl.start();
-
-const rasterInput = L.DomUtil.create("input", "hidden");
-rasterInput.type = "file";
-rasterInput.accept = ".mbtiles";
-rasterInput.style.display = "none";
-
-rasterInput.addEventListener("change", function () {
-  const file = rasterInput.files[0];
-
-  if (file.name.endsWith(".mbtiles")) {
-    loadRaster(file);
-  } else {
-    alert("Only .mbtiles files supported!");
-  }
-  this.value = "";
-}, false);
-
-const vectorInput = L.DomUtil.create("input", "hidden");
-vectorInput.type = "file";
-vectorInput.accept = ".geojson";
-vectorInput.style.display = "none";
-
-vectorInput.addEventListener("change", function () {
-  const file = vectorInput.files[0];
-
-  if (file.name.endsWith(".geojson")) {
-    loadVector(file);
-  } else {
-    alert("Only .geojson files supported!");
-  }
-  this.value = "";
-}, false);
-
-$$(".gps-btn").on("click", function (e) {
-  if (!controls.locateCtrl._active) {
-    $$(".gps-btn i").removeClass("gps_fixed");
-    $$(".gps-btn i").addClass("gps_not_fixed");
-  } else {
-    $$(".gps-btn i").removeClass("gps_not_fixed");
-    $$(".gps-btn i").addClass("gps_fixed");
-  }
-});
-
-$$(document).on("taphold", ".overlay", function() {
-  const li = $$(this);
-  const key = li.attr("data-key");
-  const name = li.find(".item-title .name").html();
-  const description = li.find(".item-title .item-footer").html();
-  app.actions.create({
-    buttons: [{	
-        text: "Delete",
-        color: "red",
-        onClick: function () {
-          app.dialog.confirm("Delete <b>" + name + "</b> from your device?", null, function() {
-            layers.raster.clearLayers();
-            storage.removeItem(name).then(function () {
-              // li.remove();
-              loadSavedMaps();
-            });
-          });
-        }	
-      }, {	
-        text: "Rename",
-        color: "blue",
-        onClick: function () {
-          app.dialog.create({
-            content: `<div class="list no-hairlines-md">
-              <ul>
-                <li class="item-content item-input" style="padding: 0px;">
-                  <div class="item-inner">
-                    <div class="item-title item-label">Name</div>
-                    <div class="item-input-wrap">
-                      <input id="map-name" type="text" value="${name}">
-                    </div>
-                  </div>
-                </li>
-                <li class="item-content item-input" style="padding: 0px;">
-                  <div class="item-inner">
-                    <div class="item-title item-label">Description</div>
-                    <div class="item-input-wrap">
-                      <textarea id="map-description">${description}</textarea>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>`,
-          buttons: [{
-            text: "CANCEL"
-          },{
-            text: "OK",
-            close: false,
-            onClick: function(dialog, e) {
-              const name = $$("#map-name").val();
-              const description = $$("#map-description").val();
-              if (name.length > 0) {
-                app.progressbar.show();
-                storage.getItem(key).then(function (value) {
-                  value.name = name;
-                  value.description = description;
-                  storage.setItem(key, value).then(function (value) {
-                    li.find(".item-title .name").html(name);
-                    li.find(".item-title .item-footer").html(description);
-                    app.progressbar.hide();
-                    app.dialog.close();
-                  });
-                });
-              } else {
-                app.toast.create({
-                  text: "Map Name required!",
-                  closeButton: true,
-                  closeTimeout: 2000
-                }).open();
-              }
-            }
-          }]
-        }).open()
-        }	
-      }, {	
-        text: "Cancel"	
-      }	
-    ]	
-  }).open();
-});
-
-function fetchFile() {
-  app.dialog.prompt("MBTiles file URL", null, function (url) {
-    app.progressbar.show();
-    fetch(url).then(response => {
-      return response.arrayBuffer();
-    }).then(buffer => {
-      const db = new SQL.Database(new Uint8Array(buffer));
-      saveMap(db, buffer);
-    }).catch(err => {
-      console.log(err);
-    });
-  });
-}
-
-function loadRaster(file) {
+function loadVector(file, name, format) {
   const reader = new FileReader();
-  reader.onload = function(e) {
-    const db = new SQL.Database(new Uint8Array(reader.result));
-    saveMap(db, reader.result);
-  }
-  reader.readAsArrayBuffer(file);
-}
+  let geojson = null;
 
-function loadVector(file) {
-  const reader = new FileReader();
   reader.onload = function(e) {
-    const geojson = JSON.parse(reader.result);
-    layers.vector.clearLayers();
+    if (format == "geojson") {
+      geojson = JSON.parse(reader.result);
+    } else if (format == "kml") {
+      const kml = (new DOMParser()).parseFromString(reader.result, "text/xml");
+      geojson = toGeoJSON.kml(kml, {styles: true});
+    } else if (format == "gpx") {
+      const gpx = (new DOMParser()).parseFromString(reader.result, "text/xml");
+      geojson = toGeoJSON.gpx(gpx);
+    }
 
-    L.geoJSON(geojson, {  
+    const layer = L.geoJSON(geojson, {
+      style: function (feature) {
+        return {
+          color: feature.properties["stroke"] ? feature.properties["stroke"] : "#3388ff",
+          opacity: feature.properties["stroke-opacity"] ? feature.properties["stroke-opacity"] : 1.0,
+          weight: feature.properties["stroke-width"] ? feature.properties["stroke-width"] : 3,
+          fillColor: feature.properties["fill"] ? feature.properties["fill"] : "#3388ff",
+          fillOpacity: feature.properties["fill-opacity"] ? feature.properties["fill-opacity"] : 0.2,
+        };
+      },
+      pointToLayer: function (feature, latlng) {
+        if (format == "kml") {
+          return L.circleMarker(latlng, {
+            radius: 6
+          }); 
+        } else {
+          return L.marker(latlng);
+        }
+      },
       onEachFeature: function (feature, layer) {
         let table = "<div style='overflow:auto;'><table>";
+        const styleProps = ["styleUrl", "styleHash", "styleMapHash", "stroke", "stroke-opacity", "stroke-width", "opacity", "fill", "fill-opacity", "icon", "scale"];
         for (const key in feature.properties) {
-          if (feature.properties.hasOwnProperty(key)) {
-            table += `<tr><th>${key.toUpperCase()}</th><td>${formatProperty(feature.properties[key])}</td></tr>`;
+          if (feature.properties.hasOwnProperty(key) && styleProps.indexOf(key) == -1) {
+            table += "<tr><th>" + key.toUpperCase() + "</th><td>" + formatProperty(feature.properties[key]) + "</td></tr>";
           }
         }
         table += "</table></div>";
@@ -265,181 +164,131 @@ function loadVector(file) {
         });
       }
       
-    }).addTo(layers.vector);
-    map.addControl(controls.layerCtrl);
-    map.fitBounds(layers.vector.getBounds());
+    }).addTo(map);
+
+    addLayer(layer, name);
+    overlayLayers[L.Util.stamp(layer)] = layer;
+    zoomToLayer(L.Util.stamp(layer));
   }
+
   reader.readAsText(file);
 }
 
-function saveMap(db, file) {
-  const metadata = db.exec("SELECT value FROM metadata WHERE name IN ('name', 'description', 'bounds') ORDER BY name DESC");
-  const key = metadata[0].values[0][0];
-  const value = {
-    name: metadata[0].values[0][0] ? metadata[0].values[0][0] : name,
-    description: metadata[0].values[1][0],
-    bounds: metadata[0].values[2][0],
-    mbtiles: file
-  };
+function loadRaster(file, name) {
+  const reader = new FileReader();
 
-  storage.setItem(key, value).then(function (value) {
-    loadSavedMaps();
-  }).catch(function(err) {
-    alert("Error saving map!");
-  });
-}
-
-function loadSavedMaps() {
-  app.progressbar.show();
-  const maps = [];
-  let size = 0;
-  $$("#map-list").empty();
-  storage.length().then(function(numberOfKeys) {
-    if (numberOfKeys > 0) {
-      storage.iterate(function(value, key, iterationNumber) {
-        size += value.mbtiles.byteLength;
-        maps.push({
-          key: key,
-          value: value
-        });
-      }).then(function() {
-        $$("#database-size").html(formatSize(size));
-        maps.sort(function(a, b) {
-          return (a.value.name.toUpperCase() < b.value.name.toUpperCase()) ? -1 : (a.value.name.toUpperCase() > b.value.name.toUpperCase()) ? 1 : 0;
-        });
-        
-        maps.forEach(function(map, index) {
-          const li = `<li class="overlay" data-key="${map.key}">
-            <a href="#" class="item-link item-content" onclick="$$('#map-title').html('${map.value.name}'); sessionStorage.setItem('activeLayer', '${map.key}'); app.views.main.router.navigate('/map/');">
-              <div class="item-inner">
-                <div class="item-title">
-                  <span class="name">${map.value.name}</span>
-                  <div class="item-footer">${map.value.description}</div>
-                </div>
-                <div class="item-after"> <span class="badge">${formatSize(map.value.mbtiles.byteLength)}</span></div>
-              </div>
-            </a>
-          </li>`;
-            
-          $$("#map-list").append(li);
-        });
-    
-        // app.preloader.hide();
-        app.progressbar.hide();
-      }).catch(function(err) {
-        alert("Error loading saved maps!");
-      });
-    } else {
-      $$("#database-size").html(0);
-      $$("#map-list").append(`
-        <li>
-          <a class="item-link list-button" onclick="app.fab.open('#add-fab');">No maps saved. Add a map now!</a>
-        </li>
-      `);
-      // app.preloader.hide();
-      app.progressbar.hide();
-    }
-  }).catch(function(err) {
-    console.log(err);
-  });
-}
-
-function loadMap() {
-  // app.preloader.show();
-  app.progressbar.show();
-  const key = sessionStorage.getItem("activeLayer");
-  storage.getItem(key).then(function (value) {
-    $$("#map-title").html(value.name);
-    const layer = L.tileLayer.mbTiles(value.mbtiles, {
-      zIndex: 10,
+  reader.onload = function(e) {
+    const layer = L.tileLayer.mbTiles(reader.result, {
       autoScale: true,
       fitBounds: true,
       updateWhenIdle: false
     }).on("databaseloaded", function(e) {
-      $$(".leaflet-control-attribution").html($$(".leaflet-control-attribution").html().replace("<a", "<a class='external' target='_blank'"));
-      // app.preloader.hide();
-      app.progressbar.hide();
-    });
-    layers.raster.addLayer(layer);
-  });
+      name = (layer.options.name ? layer.options.name : name);
+      addLayer(layer, name);
+    }).addTo(map);
+    overlayLayers[L.Util.stamp(layer)] = layer;
+  }
+
+  reader.readAsArrayBuffer(file);
 }
 
-function formatSize(size) {
-  size = size / 1000;
-  if (size > 1000) {
-    size = (size/1000).toFixed(1) + " MB";
-  } else {
-    size = size.toFixed(1) + " KB";
+function addLayer(layer, name) {
+  hideLoader();
+  controls.layerCtrl.addOverlay(layer, `
+    <span class="layer-name" id="${L.Util.stamp(layer)}">
+      ${name}
+    </span>
+    <span class="layer-buttons">
+      <span style="display: ${layer instanceof L.GeoJSON ? 'none' : 'unset'}"><a class="layer-btn" href="#" onclick="changeOpacity(${L.Util.stamp(layer)}); return false;"><i class="fas fa-adjust"></i></a></span>
+      <a class="layer-btn" href="#" onclick="zoomToLayer(${L.Util.stamp(layer)}); return false;"><i class="fas fa-expand-arrows-alt"></i></a>
+      <a class="layer-btn" href="#" onclick="removeLayer(${L.Util.stamp(layer)}, '${name}'); return false;"><i class="fas fa-trash" style="color: red"></i></a>
+    </span>
+    <div style="clear: both;"></div>
+  `);
+}
+
+function zoomToLayer(id) {
+  const layer = overlayLayers[id];
+  if (!map.hasLayer(layer)) {
+    map.addLayer(overlayLayers[id]);
   }
-  return size;
+  if (layer.options.bounds) {
+    map.fitBounds(layer.options.bounds);
+  }
+  else {
+    map.fitBounds(layer.getBounds());
+  }
+}
+
+function removeLayer(id, name) {
+  const cfm = confirm(`Remove ${name}?`);
+  if (cfm == true) {
+    const layer = overlayLayers[id];
+    if (!map.hasLayer(layer)) {
+      map.addLayer(overlayLayers[id]);
+    }
+    map.removeLayer(layer);
+    controls.layerCtrl.removeLayer(layer);
+  }
+}
+
+function changeOpacity(id) {
+  const layer = overlayLayers[id];
+  if (!map.hasLayer(layer)) {
+    map.addLayer(overlayLayers[id]);
+  }
+  let value = layer.options.opacity;
+  if (value > 0.2) {
+    layer.setOpacity((value-0.2).toFixed(1));  
+  } else {
+    layer.setOpacity(1);
+  }
 }
 
 function formatProperty(value) {
   if (typeof value == "string" && (value.indexOf("http") === 0 || value.indexOf("https") === 0)) {
-    return `<a class="external" href="${value}" target="_blank">${value}</a>`;
+    return "<a href='" + value + "' target='_blank'>" + value + "</a>";
   } else {
     return value;
   }
 }
 
-function emptyDatabase() {
-  app.dialog.confirm("Delete all saved maps?", null, function() {
-    app.progressbar.show();
-    storage.clear().then(function() {
-      loadSavedMaps();
-      app.progressbar.hide();
-    }).catch(function(err) {
-      console.log(err);
-    });
-  });
+function showLoader() {
+  document.getElementById("loading-icon").classList.remove("fa-map-marked-alt");
+  document.getElementById("loading-icon").classList.add("fa-spinner", "fa-spin");
 }
 
-function iosChecks() {
-  if (app.device.ios) {
-    if (parseFloat(app.device.osVersion) < 11.3) {
-      app.dialog.alert("This app is not fully supported on devices running iOS < 11.3.", "Warning");
-    } else if (!app.device.standalone) {
-      if (!localStorage.getItem("dismissPrompt")) {
-        app.toast.create({
-          text: "Tap the <img src='assets/img/ios-share.png' height='18px'> button " + (app.device.ipad ? "at the top of the screen" : "below") + " to Add to Home Screen.",
-          closeButton: true,
-          position: app.device.ipad ? "center" : "bottom",
-          on: {
-            close: function () {
-              localStorage.setItem("dismissPrompt", true);
-            }
-          }
-        }).open();
-      } 
+function hideLoader() {
+  document.getElementById("loading-icon").classList.remove("fa-spin", "fa-spinner");
+  document.getElementById("loading-icon").classList.add("fa-map-marked-alt");
+}
+
+function goOffline() {
+  const layers = Object.keys(baseLayers);
+  for (const layer of layers) {
+    if (layer == "None") {
+      map.addLayer(baseLayers[layer]);
+    } else {
+      map.removeLayer(baseLayers[layer]);
     }
   }
 }
 
-app.on("init", function() {
-  iosChecks();
-  app.progressbar.show();
-  initSqlJs({
-    locateFile: function() {
-      return "assets/vendor/sqljs-1.1.0/sql-wasm.wasm";
-    }
-  }).then(function(SQL){
-    if (app.utils.parseUrlQuery(document.URL).map) {
-      const url = app.utils.parseUrlQuery(document.URL).map;
-      fetch(url).then(response => {
-        return response.arrayBuffer();
-      }).then(buffer => {
-        const db = new SQL.Database(new Uint8Array(buffer));
-        saveMap(db, buffer);
-        window.history.replaceState(null, null, window.location.pathname);
-      }).catch(err => {
-        console.log(err);
-      });
-    }
-    loadSavedMaps();
-    if (app.views.current.router.currentRoute.url == "/map/" && sessionStorage.getItem("activeLayer")) {
-      loadMap();
-    }
-  });
-})
+map.once("locationfound", function(e) {
+  map.fitBounds(e.bounds, {maxZoom: 18});
+});
 
-app.init();
+window.addEventListener("offline",  function(event) {
+  goOffline();
+});
+
+initSqlJs({
+  locateFile: function() {
+    return "assets/vendor/sqljs-1.1.0/sql-wasm.wasm";
+  }
+}).then(function(SQL){
+  
+});
+
+controls.locateCtrl.start();
+navigator.onLine ? null : goOffline();
