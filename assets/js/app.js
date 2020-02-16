@@ -75,6 +75,8 @@ const baseLayers = {
   })
 };
 
+const selectLayer = L.featureGroup(null).addTo(map);
+
 const overlayLayers = {};
 
 const controls = {
@@ -151,6 +153,20 @@ function loadVector(file, name, format) {
       },
       onEachFeature: function (feature, layer) {
         let table = "<div style='overflow:auto;'><table>";
+        
+        if (feature && feature.geometry) {
+          if (feature.geometry.type === "LineString") {
+            const miles = turf.length(layer.toGeoJSON(), {units: "miles"});
+            const length = (miles < 1) ? ((miles * 5280).toFixed(2) + " Feet") : (miles.toFixed(2) + " Miles");
+            table += `<tr><th>LENGTH</th><td>${length}</td></tr>`;
+          } else if (feature.geometry.type === "Polygon") {
+            const sqMeters = turf.area(layer.toGeoJSON());
+            const acres = (sqMeters / 4046.86);
+            const area = (acres < 640) ? (acres.toFixed(2) + " Acres") : ((sqMeters / 2589990).toFixed(2) + " Sq. Miles");
+            table += `<tr><th>AREA</th><td>${area}</td></tr>`;
+          }
+        }
+
         const styleProps = ["styleUrl", "styleHash", "styleMapHash", "stroke", "stroke-opacity", "stroke-width", "opacity", "fill", "fill-opacity", "icon", "scale"];
         for (const key in feature.properties) {
           if (feature.properties.hasOwnProperty(key) && styleProps.indexOf(key) == -1) {
@@ -161,6 +177,26 @@ function loadVector(file, name, format) {
         layer.bindPopup(table, {
           maxHeight: 300,
           maxWidth: 250
+        });
+        layer.on({
+          popupclose: function (e) {
+            selectLayer.clearLayers();
+          },
+          click: function (e) {
+            selectLayer.clearLayers();
+            selectLayer.addLayer(L.geoJSON(layer.toGeoJSON(), {
+              style: {
+                color: "#00FFFF",
+                weight: 5
+              },
+              pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, {
+                  radius: 6,
+                  color: "#00FFFF"
+                }); 
+              }
+            }))
+          }
         });
       }
       
