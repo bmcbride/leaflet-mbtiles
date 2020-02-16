@@ -133,6 +133,10 @@ function loadVector(file, name, format) {
     }
 
     const layer = L.geoJSON(geojson, {
+      renderer: L.canvas({
+        padding: 0.5,
+        tolerance: 5
+      }),
       style: function (feature) {
         return {
           color: feature.properties["stroke"] ? feature.properties["stroke"] : "#3388ff",
