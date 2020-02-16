@@ -155,7 +155,7 @@ function loadVector(file, name, format) {
         let table = "<div style='overflow:auto;'><table>";
         
         if (feature && feature.geometry) {
-          if (feature.geometry.type === "LineString") {
+          if (feature.geometry.type.includes("LineString")) {
             const miles = turf.length(layer.toGeoJSON(), {units: "miles"});
             const length = (miles < 1) ? ((miles * 5280).toFixed(2) + " Feet") : (miles.toFixed(2) + " Miles");
             table += `<tr><th>LENGTH</th><td>${length}</td></tr>`;
