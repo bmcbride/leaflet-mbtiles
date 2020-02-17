@@ -315,8 +315,8 @@ function hideLoader() {
 }
 
 function goOffline() {
-  const layers = Object.keys(layers.basemaps);
-  for (const layer of layers) {
+  const basemaps = Object.keys(layers.basemaps);
+  for (const layer of basemaps) {
     if (layer == "None") {
       map.addLayer(layers.basemaps[layer]);
     } else {
@@ -361,7 +361,7 @@ initSqlJs({
     return "assets/vendor/sqljs-1.1.0/sql-wasm.wasm";
   }
 }).then(function(SQL){
+  navigator.onLine ? null : goOffline();
 });
 
 controls.locateCtrl.start();
-navigator.onLine ? null : goOffline();
