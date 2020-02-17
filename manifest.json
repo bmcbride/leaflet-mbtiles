@@ -1,7 +1,7 @@
 {
   "name": "GPS Map",
-  "short_name": "Maps",
-  "description": "A simple map viewer, built for the mobile web",
+  "short_name": "GPS Map",
+  "description": "An offline capable map viewer with GPS integration",
   "start_url": "index.html",
   "display": "standalone",
   "background_color":  "#2196f3",
