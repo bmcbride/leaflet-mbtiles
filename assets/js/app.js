@@ -135,7 +135,7 @@ function loadVector(file, name, format) {
     const layer = L.geoJSON(geojson, {
       renderer: L.canvas({
         padding: 0.5,
-        tolerance: 5
+        tolerance: 10
       }),
       style: function (feature) {
         return {
@@ -160,13 +160,12 @@ function loadVector(file, name, format) {
         
         if (feature && feature.geometry) {
           if (feature.geometry.type.includes("LineString")) {
-            const miles = turf.length(layer.toGeoJSON(), {units: "miles"});
-            const length = (miles < 1) ? ((miles * 5280).toFixed(2) + " Feet") : (miles.toFixed(2) + " Miles");
-            table += `<tr><th>LENGTH</th><td>${length}</td></tr>`;
+            const length = turf.length(layer.toGeoJSON(), {units: "miles"});
+            table += `<tr><th>LENGTH</th><td>${length.toFixed(1)} Miles</td></tr>`;
           } else if (feature.geometry.type === "Polygon") {
             const sqMeters = turf.area(layer.toGeoJSON());
             const acres = (sqMeters / 4046.86);
-            const area = (acres < 640) ? (acres.toFixed(2) + " Acres") : ((sqMeters / 2589990).toFixed(2) + " Sq. Miles");
+            const area = (acres < 640) ? (acres.toFixed(1) + " Acres") : ((sqMeters / 2589990).toFixed(1) + " Sq. Miles");
             table += `<tr><th>AREA</th><td>${area}</td></tr>`;
           }
         }
