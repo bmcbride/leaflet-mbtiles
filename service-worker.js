@@ -10,7 +10,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-const PRECACHE = 'precache-02.17.20.7';
+const PRECACHE = 'precache-02.17.20.8';
 const RUNTIME = 'runtime';
 
 // A list of local resources we always want to be cached.
@@ -21,6 +21,7 @@ const PRECACHE_URLS = [
   'assets/img/apple-touch-icon.png',
   'assets/img/favicon-32x32.png',
   'assets/img/favicon-16x16.png',
+  'assets/img/favicon-512x512.png',
   'assets/img/android-chrome-192x192.png',
   'assets/vendor/leaflet-1.6.0/images/layers.png',
   'assets/vendor/leaflet-1.6.0/images/layers-2x.png',
