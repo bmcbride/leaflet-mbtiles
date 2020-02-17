@@ -5,6 +5,10 @@ const map = L.map("map", {
 }).fitWorld();
 map.attributionControl.setPrefix(null);
 
+map.once("locationfound", function(e) {
+  map.fitBounds(e.bounds, {maxZoom: 18});
+});
+
 const layers = {
   basemaps: {
     "Streets": L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.@2xpng", {
@@ -52,20 +56,8 @@ L.Control.AddFile = L.Control.extend({
     fileInput.style.display = "none";
     
     fileInput.addEventListener("change", function () {
-      showLoader();
-
       const file = fileInput.files[0];
-      const name = file.name.split(".").slice(0, -1).join(".");
-
-      if (file.name.endsWith(".mbtiles")) {
-        loadRaster(file, name);
-      } else if (file.name.endsWith(".geojson") || file.name.endsWith(".kml") || file.name.endsWith(".gpx")) {
-        const format = file.name.split(".").pop();
-        loadVector(file, name, format);
-      } else {
-        alert("MBTiles, GeoJSON, KML, and GPX files supported.");
-        hideLoader();
-      }
+      handleFile(file);
       this.value = "";
     }, false);
     
@@ -91,7 +83,7 @@ const controls = {
   }).addTo(map),
 
   locateCtrl: L.control.locate({
-    icon: "fa fa-crosshairs",
+    icon: "fas fa-crosshairs",
     setView: "untilPan",
     cacheLocation: true,
     position: "topleft",
@@ -116,6 +108,22 @@ const controls = {
     position: "topleft"
   }).addTo(map)
 };
+
+function handleFile(file) {
+  showLoader();
+
+  const name = file.name.split(".").slice(0, -1).join(".");
+
+  if (file.name.endsWith(".mbtiles")) {
+    loadRaster(file, name);
+  } else if (file.name.endsWith(".geojson") || file.name.endsWith(".kml") || file.name.endsWith(".gpx")) {
+    const format = file.name.split(".").pop();
+    loadVector(file, name, format);
+  } else {
+    alert("MBTiles, GeoJSON, KML, and GPX files supported.");
+    hideLoader();
+  }
+}
 
 function loadVector(file, name, format) {
   const reader = new FileReader();
@@ -238,9 +246,11 @@ function addLayer(layer, name) {
       ${name}
     </span>
     <span class="layer-buttons">
-      <span style="display: ${layer instanceof L.GeoJSON ? 'none' : 'unset'}"><a class="layer-btn" href="#" onclick="changeOpacity(${L.Util.stamp(layer)}); return false;"><i class="fas fa-adjust"></i></a></span>
-      <a class="layer-btn" href="#" onclick="zoomToLayer(${L.Util.stamp(layer)}); return false;"><i class="fas fa-expand-arrows-alt"></i></a>
-      <a class="layer-btn" href="#" onclick="removeLayer(${L.Util.stamp(layer)}, '${name}'); return false;"><i class="fas fa-trash" style="color: red"></i></a>
+      <span style="display: ${layer instanceof L.GeoJSON ? 'none' : 'unset'}">
+        <a class="layer-btn" href="#" title="Change opacity" onclick="changeOpacity(${L.Util.stamp(layer)}); return false;"><i class="fas fa-adjust"></i></a>
+      </span>
+      <a class="layer-btn" href="#" title="Zoom to layer" onclick="zoomToLayer(${L.Util.stamp(layer)}); return false;"><i class="fas fa-expand-arrows-alt"></i></a>
+      <a class="layer-btn" href="#" title="Remove layer" onclick="removeLayer(${L.Util.stamp(layer)}, '${name}'); return false;"><i class="fas fa-trash" style="color: red"></i></a>
     </span>
     <div style="clear: both;"></div>
   `);
@@ -315,20 +325,37 @@ function goOffline() {
   }
 }
 
-map.once("locationfound", function(e) {
-  map.fitBounds(e.bounds, {maxZoom: 18});
-});
-
 window.addEventListener("offline",  function(e) {
   goOffline();
 });
+
+const dropArea = document.getElementById("map");
+
+["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
+  dropArea.addEventListener(eventName, function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }, false);
+});
+
+["dragenter", "dragover"].forEach(eventName => {
+  dropArea.addEventListener(eventName, showLoader, false);
+});
+
+["dragleave", "drop"].forEach(eventName => {
+  dropArea.addEventListener(eventName, hideLoader, false);
+});
+
+dropArea.addEventListener("drop", function(e) {
+  const file = e.dataTransfer.files[0];
+  handleFile(file);
+}, false);
 
 initSqlJs({
   locateFile: function() {
     return "assets/vendor/sqljs-1.1.0/sql-wasm.wasm";
   }
 }).then(function(SQL){
-  
 });
 
 controls.locateCtrl.start();
