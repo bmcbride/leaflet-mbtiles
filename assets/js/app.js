@@ -3,7 +3,7 @@ const map = L.map("map", {
   maxZoom: 22,
   zoomControl: false
 }).fitWorld();
-map.attributionControl.setPrefix(null);
+map.attributionControl.setPrefix(`<a href="#" onclick="showHelp(); return false;">Help</a>`);
 
 map.once("locationfound", function(e) {
   map.fitBounds(e.bounds, {maxZoom: 18});
@@ -323,6 +323,11 @@ function goOffline() {
       map.removeLayer(layers.basemaps[layer]);
     }
   }
+}
+
+function showHelp() {
+  const info = 'Welcome to GPS Map, an offline capable map viewer with GPS integration!\n\nTap the crosshairs button to locate, zoom to, and follow your GPS location.\n\nTap the map/marker button to load an MBTiles, GeoJSON, KML, or GPX file directly from your device.\n\nTap the layers button to view online basemaps and manage offline layers.';
+  alert(info);
 }
 
 window.addEventListener("offline",  function(e) {
