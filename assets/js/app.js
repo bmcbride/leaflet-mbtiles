@@ -1,3 +1,48 @@
+const map = L.map("map", {
+  zoomSnap: 0,
+  maxZoom: 22,
+  zoomControl: false
+}).fitWorld();
+map.attributionControl.setPrefix(null);
+
+const layers = {
+  basemaps: {
+    "Streets": L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.@2xpng", {
+      maxNativeZoom: 18,
+      maxZoom: map.getMaxZoom(),
+      attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
+    }).addTo(map),
+
+    "Aerial": L.tileLayer.wms("https://orthos.dhses.ny.gov/ArcGIS/services/Latest/MapServer/WMSServer", {
+      layers: "0,1,2,3,4",
+      format: "image/png",
+      transparent: true,
+      maxNativeZoom: 18,
+      maxZoom: map.getMaxZoom(),
+      attribution: "<a href='https://gis.ny.gov/gateway/mg/webserv/webserv.html' class='external'>NYSDOP</a>"
+    }),
+    
+    "Topo": L.tileLayer("https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}", {
+      maxNativeZoom: 16,
+      maxZoom: map.getMaxZoom(),
+      attribution: "USGS",
+    }),
+
+    "Charts": L.tileLayer("https://tileservice.charts.noaa.gov/tiles/50000_1/{z}/{x}/{y}.png", {
+      maxNativeZoom: 18,
+      maxZoom: map.getMaxZoom(),
+      attribution: "NOAA",
+    }),
+
+    "None": L.tileLayer("", {
+      maxZoom: map.getMaxZoom()
+    })
+  },
+
+  select: L.featureGroup(null).addTo(map),
+  overlays: {}
+};
+
 /*** Begin custom input control for adding local file ***/
 L.Control.AddFile = L.Control.extend({
   onAdd: function(map) {
@@ -25,7 +70,11 @@ L.Control.AddFile = L.Control.extend({
     }, false);
     
     const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-    div.innerHTML = "<a class='leaflet-bar-part leaflet-bar-part-single file-control-btn' title='Load File' onclick='fileInput.click();'><i id='loading-icon' class='fas fa-map-marked-alt'></i></a>";
+    div.innerHTML = `
+      <a class='leaflet-bar-part leaflet-bar-part-single file-control-btn' title='Load File' onclick='fileInput.click();'>
+        <i id='loading-icon' class='fas fa-map-marked-alt'></i>
+      </a>
+    `;
     return div
   }
 });
@@ -33,54 +82,10 @@ L.Control.AddFile = L.Control.extend({
 L.control.addfile = function(opts) {
   return new L.Control.AddFile(opts);
 }
-/*** end custom control ***/
-
-const map = L.map("map", {
-  zoomSnap: 0,
-  maxZoom: 22,
-  zoomControl: false
-}).fitWorld();
-map.attributionControl.setPrefix(null);
-
-const baseLayers = {
-  "Streets": L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.@2xpng", {
-    maxNativeZoom: 18,
-    maxZoom: map.getMaxZoom(),
-    attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
-  }).addTo(map),
-
-  "Aerial": L.tileLayer.wms("https://orthos.dhses.ny.gov/ArcGIS/services/Latest/MapServer/WMSServer", {
-    layers: "0,1,2,3,4",
-    format: "image/png",
-    transparent: true,
-    maxNativeZoom: 18,
-    maxZoom: map.getMaxZoom(),
-    attribution: "<a href='https://gis.ny.gov/gateway/mg/webserv/webserv.html' class='external'>NYSDOP</a>"
-  }),
-  
-  "Topo": L.tileLayer("https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}", {
-    maxNativeZoom: 16,
-    maxZoom: map.getMaxZoom(),
-    attribution: "USGS",
-  }),
-
-  "Charts": L.tileLayer("https://tileservice.charts.noaa.gov/tiles/50000_1/{z}/{x}/{y}.png", {
-    maxNativeZoom: 18,
-    maxZoom: map.getMaxZoom(),
-    attribution: "NOAA",
-  }),
-
-  "None": L.tileLayer("", {
-    maxZoom: map.getMaxZoom()
-  })
-};
-
-const selectLayer = L.featureGroup(null).addTo(map);
-
-const overlayLayers = {};
+/*** End custom control ***/
 
 const controls = {
-  layerCtrl: L.control.layers(baseLayers, null, {
+  layerCtrl: L.control.layers(layers.basemaps, null, {
     collapsed: true,
     position: "topright"
   }).addTo(map),
@@ -109,12 +114,7 @@ const controls = {
 
   fileCtrl: L.control.addfile({
     position: "topleft"
-  }).addTo(map),
-
-  scaleCtrl: L.control.scale({
-    metric: false,
-    position: "bottomright"
-  })
+  }).addTo(map)
 };
 
 function loadVector(file, name, format) {
@@ -183,11 +183,11 @@ function loadVector(file, name, format) {
         });
         layer.on({
           popupclose: function (e) {
-            selectLayer.clearLayers();
+            layers.select.clearLayers();
           },
           click: function (e) {
-            selectLayer.clearLayers();
-            selectLayer.addLayer(L.geoJSON(layer.toGeoJSON(), {
+            layers.select.clearLayers();
+            layers.select.addLayer(L.geoJSON(layer.toGeoJSON(), {
               style: {
                 color: "#00FFFF",
                 weight: 5
@@ -206,7 +206,7 @@ function loadVector(file, name, format) {
     }).addTo(map);
 
     addLayer(layer, name);
-    overlayLayers[L.Util.stamp(layer)] = layer;
+    layers.overlays[L.Util.stamp(layer)] = layer;
     zoomToLayer(L.Util.stamp(layer));
   }
 
@@ -225,7 +225,7 @@ function loadRaster(file, name) {
       name = (layer.options.name ? layer.options.name : name);
       addLayer(layer, name);
     }).addTo(map);
-    overlayLayers[L.Util.stamp(layer)] = layer;
+    layers.overlays[L.Util.stamp(layer)] = layer;
   }
 
   reader.readAsArrayBuffer(file);
@@ -247,9 +247,9 @@ function addLayer(layer, name) {
 }
 
 function zoomToLayer(id) {
-  const layer = overlayLayers[id];
+  const layer = layers.overlays[id];
   if (!map.hasLayer(layer)) {
-    map.addLayer(overlayLayers[id]);
+    map.addLayer(layers.overlays[id]);
   }
   if (layer.options.bounds) {
     map.fitBounds(layer.options.bounds);
@@ -262,9 +262,9 @@ function zoomToLayer(id) {
 function removeLayer(id, name) {
   const cfm = confirm(`Remove ${name}?`);
   if (cfm == true) {
-    const layer = overlayLayers[id];
+    const layer = layers.overlays[id];
     if (!map.hasLayer(layer)) {
-      map.addLayer(overlayLayers[id]);
+      map.addLayer(layers.overlays[id]);
     }
     map.removeLayer(layer);
     controls.layerCtrl.removeLayer(layer);
@@ -272,9 +272,9 @@ function removeLayer(id, name) {
 }
 
 function changeOpacity(id) {
-  const layer = overlayLayers[id];
+  const layer = layers.overlays[id];
   if (!map.hasLayer(layer)) {
-    map.addLayer(overlayLayers[id]);
+    map.addLayer(layers.overlays[id]);
   }
   let value = layer.options.opacity;
   if (value > 0.2) {
@@ -286,29 +286,31 @@ function changeOpacity(id) {
 
 function formatProperty(value) {
   if (typeof value == "string" && (value.indexOf("http") === 0 || value.indexOf("https") === 0)) {
-    return "<a href='" + value + "' target='_blank'>" + value + "</a>";
+    return `<a href="${value}" target="_blank">${value}</a>`;
   } else {
     return value;
   }
 }
 
 function showLoader() {
-  document.getElementById("loading-icon").classList.remove("fa-map-marked-alt");
-  document.getElementById("loading-icon").classList.add("fa-spinner", "fa-spin");
+  const loadingIcon = document.getElementById("loading-icon");
+  loadingIcon.classList.remove("fa-map-marked-alt");
+  loadingIcon.classList.add("fa-spinner", "fa-spin");
 }
 
 function hideLoader() {
-  document.getElementById("loading-icon").classList.remove("fa-spin", "fa-spinner");
-  document.getElementById("loading-icon").classList.add("fa-map-marked-alt");
+  const loadingIcon = document.getElementById("loading-icon");
+  loadingIcon.classList.remove("fa-spin", "fa-spinner");
+  loadingIcon.classList.add("fa-map-marked-alt");
 }
 
 function goOffline() {
-  const layers = Object.keys(baseLayers);
+  const layers = Object.keys(layers.basemaps);
   for (const layer of layers) {
     if (layer == "None") {
-      map.addLayer(baseLayers[layer]);
+      map.addLayer(layers.basemaps[layer]);
     } else {
-      map.removeLayer(baseLayers[layer]);
+      map.removeLayer(layers.basemaps[layer]);
     }
   }
 }
@@ -317,7 +319,7 @@ map.once("locationfound", function(e) {
   map.fitBounds(e.bounds, {maxZoom: 18});
 });
 
-window.addEventListener("offline",  function(event) {
+window.addEventListener("offline",  function(e) {
   goOffline();
 });
 
