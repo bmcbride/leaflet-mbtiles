@@ -66,6 +66,9 @@ const layers = {
 const controls = {
   attributionCtrl: L.control.attribution({
     prefix: null,
+  }).addTo(map),
+
+  scaleCtrl: L.control.scale({
     position: "bottomleft"
   }).addTo(map),
 

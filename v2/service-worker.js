@@ -29,6 +29,6 @@ workbox.precaching.precacheAndRoute([
   {url: 'assets/vendor/leaflet-1.7.1/leaflet.js', revision: '09.08.20.1'},
   {url: 'assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.js', revision: '09.08.20.1'},
   {url: 'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js', revision: '09.08.20.1'},
-  {url: 'assets/js/app.js', revision: '09.08.20.1'},
+  {url: 'assets/js/app.js', revision: '09.08.20.2'},
   {url: 'assets/css/app.css', revision: '09.08.20.1'}
 ]);
