@@ -9,13 +9,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="#007aff">
     <meta name="description" content="">
     <meta name="author" content="Bryan McBride">
-    <title>Maps</title>
+    <title>My Maps</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-    <link rel="stylesheet" href="assets/vendor/framework7-5.4.1/css/framework7.bundle.min.css">
-    <link rel="stylesheet" href="assets/vendor/leaflet-1.6.0/leaflet.css">
+    <link rel="stylesheet" href="assets/vendor/framework7-5.7.12/css/framework7.bundle.min.css">
+    <link rel="stylesheet" href="assets/vendor/leaflet-1.7.1/leaflet.css">
     <link rel="stylesheet" href="assets/css/app.css">
   </head>
   <body>
@@ -37,9 +37,9 @@
             <div class="page-content">
               <div class="block-title text-color-blue">About</div>
               <div class="block">
-                <p>Save MBTiles maps to your device for offline navigation.</p>
+                <p>Save maps to your device for offline viewing and navigation.</p>
               </div>
-              <div class="block-title text-color-blue">Saved Maps</div>
+              <div class="block-title text-color-blue">My Maps</div>
               <div class="list">
                 <ul>
                   <li>
@@ -97,10 +97,13 @@
                   <i class="icon material-icons">menu</i>
                 </a>
               </div>  
-              <div class="title sliding">Saved Maps</div>
+              <div class="title sliding">My Maps</div>
                 <div class="right">
                   <a class="link icon-only searchbar-enable" data-searchbar=".maplist-searchbar">
                     <i class="icon material-icons">search</i>
+                  </a>
+                  <a class="link icon-only" onclick="app.views.main.router.navigate('/add/');">
+                    <i class="icon material-icons">add</i>
                   </a>
                 </div>
                 <form data-search-container=".search-list" data-search-in=".item-title" class="searchbar searchbar-expandable maplist-searchbar searchbar-init">
@@ -120,14 +123,11 @@
               <i class="icon material-icons">add</i>
             </a>
           </div> -->
-          <div class="fab fab-right-bottom" id="add-fab">
+          <!-- <div class="fab fab-right-bottom" id="add-fab">
             <a href="#">
-              <!-- First icon is visible when Speed Dial actions are closed -->
               <i class="icon material-icons">add</i>
-              <!-- Second icon is visible when Speed Dial actions are opened -->
               <i class="icon material-icons">close</i>
             </a>
-            <!-- Speed Dial action buttons -->
             <div class="fab-buttons fab-buttons-top">
               <a href="#" class="fab-label-button" onclick="rasterInput.click(); app.fab.close('#add-fab');">
                 <i class="icon material-icons">sd_storage</i>
@@ -138,7 +138,7 @@
                 <span class="fab-label">MBTiles file from URL</span>
               </a>
             </div>
-          </div>
+          </div> -->
           <div class="page-content">
             <div class="searchbar-backdrop"></div>
             <div class="list simple-list searchbar-not-found">
@@ -147,8 +147,66 @@
               </ul>
             </div>
             
-            <div class="list sortable search-list searchbar-found" oncontextmenu="return false;">
+            <div class="list no-chevron sortable search-list searchbar-found" oncontextmenu="return false;">
               <ul id="map-list"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Map Popup -->
+      <div class="popup popup-tablet-fullscreen" id="add-popup">
+        <div class="view">
+          <div class="page" data-name="add">
+            <div class="navbar">
+              <div class="navbar-bg"></div>
+              <div class="navbar-inner">
+                <div class="left">
+                  <a href="#" class="link popup-close">
+                    <i class="icon material-icons">arrow_back</i>
+                  </a>
+                </div>
+                <div class="title">
+                  Add Map
+                </div>
+                <div class="right">
+                  <a href="#" class="link icon-only">
+                    <i class="icon material-icons">qr_code</i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="page-content">
+              <div class="list no-chevron">
+                <ul>
+                  <li>
+                    <a href="#" class="item-link item-content" onclick="rasterInput.click();">
+                      <div class="item-media"><i class="icon material-icons">sd_storage</i></div>
+                      <div class="item-inner">
+                        <div class="item-title">
+                          From Storage Locations
+                          <div class="item-footer">
+                            Import a map from a cloud storage app or from a location on your device
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" class="item-link item-content" onclick="fetchFile();">
+                      <div class="item-media"><i class="icon material-icons">public</i></div>
+                      <div class="item-inner">
+                        <div class="item-title">
+                          From The Web
+                          <div class="item-footer">
+                            Tap to enter a map URL
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -167,17 +225,20 @@
                   </a>
                 </div>
                 <div class="title" id="map-title"></div>
-                <div class="right">
-                  <a href="#" class="link icon-only" onclick="vectorInput.click();">
+                <div class="right" id="map-btns">
+                  <!-- <a href="#" class="link icon-only" onclick="vectorInput.click();">
                     <i class="icon material-icons">place</i>
-                  </a>
-                  <a href="#" class="link icon-only" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">
+                  </a> -->
+                  <a href="#" class="link icon-only" title="Zoom to map bounds" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">
                     <i class="icon material-icons">zoom_out_map</i>
                   </a>
+                  <!-- <a id="gps-fab" href="#" class="link icon-only"> -->
+                    <!-- <i class="icon material-icons">zoom_out_map</i> -->
+                  <!-- </a> -->
                 </div>
               </div>
             </div>
-            <div class="fab fab-right-bottom" id="gps-fab"></div>
+            <!-- <div class="fab fab-right-bottom" id="gps-fab"></div> -->
             <div class="page-content">
               <div id="map"></div>
             </div>
@@ -185,17 +246,18 @@
         </div>
       </div>
     </div>
-    <script src="assets/vendor/framework7-5.4.1/js/framework7.bundle.min.js"></script>
-    <script src="assets/vendor/sqljs-1.1.0/sql-wasm.js"></script>
-    <script src="assets/vendor/localForage-1.7.3/localforage.min.js"></script>
-    <script src="assets/vendor/leaflet-1.6.0/leaflet.js"></script>
-    <script src="assets/vendor/leaflet-locatecontrol-0.70.0/L.Control.Locate.min.js"></script>
+    <script src="assets/vendor/framework7-5.7.12/js/framework7.bundle.min.js"></script>
+    <script src="assets/vendor/sqljs-1.3.0/sql-wasm.js"></script>
+    <script src="assets/vendor/localForage-1.9.0/localforage.min.js"></script>
+    <script src="assets/vendor/leaflet-1.7.1/leaflet.js"></script>
+    <script src="assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.js"></script>
     <script src="assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js"></script>
     <script src="assets/js/app.js"></script>
-    <!-- <script>
+    <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("service-worker.js");
       }
-    </script> -->
+    </script>
+    <noscript>This website requires JavaScript!</noscript>
   </body>
 </html>

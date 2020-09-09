@@ -39,6 +39,12 @@ const app = new Framework7({
         }
       }
     }
+  }, {
+    name: "add",
+    path: "/add/",
+    popup: {
+      el: "#add-popup"
+    }
   }],
   touch: {
     tapHold: true
@@ -83,8 +89,8 @@ const controls = {
     },
     iconElementTag: "i",
     createButtonCallback: function (container, options) {
-      const link = L.DomUtil.create("a", "gps-btn", $$("#gps-fab")[0]);
-      link.title = options.strings.title;
+      const link = L.DomUtil.create("a", "gps-btn link icon-only", $$("#map-btns")[0]);
+      link.title = "Zoom to my location";
       const icon = L.DomUtil.create(options.iconElementTag, "icon material-icons", link);
       return { link: link, icon: icon };
     },
@@ -146,21 +152,10 @@ $$(document).on("taphold", ".overlay", function() {
   const name = li.find(".item-title .name").html();
   const description = li.find(".item-title .item-footer").html();
   app.actions.create({
-    buttons: [{	
-        text: "Delete",
-        color: "red",
-        onClick: function () {
-          app.dialog.confirm("Delete <b>" + name + "</b> from your device?", null, function() {
-            layers.raster.clearLayers();
-            storage.removeItem(name).then(function () {
-              // li.remove();
-              loadSavedMaps();
-            });
-          });
-        }	
-      }, {	
-        text: "Rename",
-        color: "blue",
+    buttons: [
+      [{
+        text: "Edit",
+        // color: "blue",
         onClick: function () {
           app.dialog.create({
             content: `<div class="list no-hairlines-md">
@@ -214,21 +209,33 @@ $$(document).on("taphold", ".overlay", function() {
           }]
         }).open()
         }	
-      }, {	
-        text: "Cancel"	
-      }	
+      }], 
+      [{	
+        text: "Delete",
+        // icon: "<i class='icon material-icons'>delete</i>",
+        color: "red",
+        onClick: function () {
+          app.dialog.confirm("Delete <b>" + name + "</b> from your device?", null, function() {
+            layers.raster.clearLayers();
+            storage.removeItem(key).then(function () {
+              // li.remove();
+              loadSavedMaps();
+            });
+          });
+        }	
+      }]
     ]	
   }).open();
 });
 
 function fetchFile() {
-  app.dialog.prompt("MBTiles file URL", null, function (url) {
+  app.dialog.prompt(null, "Map URL", function (url) {
     app.progressbar.show();
     fetch(url).then(response => {
       return response.arrayBuffer();
     }).then(buffer => {
       const db = new SQL.Database(new Uint8Array(buffer));
-      saveMap(db, buffer);
+      saveMap(db, buffer, url);
     }).catch(err => {
       console.log(err);
     });
@@ -239,7 +246,7 @@ function loadRaster(file) {
   const reader = new FileReader();
   reader.onload = function(e) {
     const db = new SQL.Database(new Uint8Array(reader.result));
-    saveMap(db, reader.result);
+    saveMap(db, reader.result, "file");
   }
   reader.readAsArrayBuffer(file);
 }
@@ -272,17 +279,25 @@ function loadVector(file) {
   reader.readAsText(file);
 }
 
-function saveMap(db, file) {
+function saveMap(db, file, source) {
   const metadata = db.exec("SELECT value FROM metadata WHERE name IN ('name', 'description', 'bounds') ORDER BY name DESC");
-  const key = metadata[0].values[0][0];
+  // const key = metadata[0].values[0][0];
+  const key = (source == "file") ? Date.now().toString() : source;
   const value = {
     name: metadata[0].values[0][0] ? metadata[0].values[0][0] : name,
     description: metadata[0].values[1][0],
     bounds: metadata[0].values[2][0],
+    timestamp: Date.now(),
+    source: source,
     mbtiles: file
   };
 
   storage.setItem(key, value).then(function (value) {
+    // app.views.main.router.back();
+    sessionStorage.setItem("activeLayer", key);
+    window.history.replaceState(null, null, window.location.pathname);
+    app.views.main.router.navigate("/map/");
+
     loadSavedMaps();
   }).catch(function(err) {
     alert("Error saving map!");
@@ -316,7 +331,10 @@ function loadSavedMaps() {
                   <span class="name">${map.value.name}</span>
                   <div class="item-footer">${map.value.description}</div>
                 </div>
-                <div class="item-after"> <span class="badge">${formatSize(map.value.mbtiles.byteLength)}</span></div>
+                <div class="item-after" style="display: block">
+                  <span class="badge">${formatSize(map.value.mbtiles.byteLength)}</span><br>
+                  <span style="font-size: x-small">${new Date(map.value.timestamp).toLocaleDateString()}</span>
+                </div>
               </div>
             </a>
           </li>`;
@@ -324,7 +342,6 @@ function loadSavedMaps() {
           $$("#map-list").append(li);
         });
     
-        // app.preloader.hide();
         app.progressbar.hide();
       }).catch(function(err) {
         alert("Error loading saved maps!");
@@ -333,10 +350,9 @@ function loadSavedMaps() {
       $$("#database-size").html(0);
       $$("#map-list").append(`
         <li>
-          <a class="item-link list-button" onclick="app.fab.open('#add-fab');">No maps saved. Add a map now!</a>
+          <a class="item-link list-button" onclick="app.views.main.router.navigate('/add/');">No maps saved. Add a map now!</a>
         </li>
       `);
-      // app.preloader.hide();
       app.progressbar.hide();
     }
   }).catch(function(err) {
@@ -345,7 +361,6 @@ function loadSavedMaps() {
 }
 
 function loadMap() {
-  // app.preloader.show();
   app.progressbar.show();
   const key = sessionStorage.getItem("activeLayer");
   storage.getItem(key).then(function (value) {
@@ -357,7 +372,6 @@ function loadMap() {
       updateWhenIdle: false
     }).on("databaseloaded", function(e) {
       $$(".leaflet-control-attribution").html($$(".leaflet-control-attribution").html().replace("<a", "<a class='external' target='_blank'"));
-      // app.preloader.hide();
       app.progressbar.hide();
     });
     layers.raster.addLayer(layer);
@@ -418,23 +432,46 @@ function iosChecks() {
 app.on("init", function() {
   iosChecks();
   app.progressbar.show();
+  
   initSqlJs({
     locateFile: function() {
-      return "assets/vendor/sqljs-1.1.0/sql-wasm.wasm";
+      return "assets/vendor/sqljs-1.3.0/sql-wasm.wasm";
     }
-  }).then(function(SQL){
+  }).then(function(sql){
+    SQL = sql;
     if (app.utils.parseUrlQuery(document.URL).map) {
       const url = app.utils.parseUrlQuery(document.URL).map;
-      fetch(url).then(response => {
-        return response.arrayBuffer();
-      }).then(buffer => {
-        const db = new SQL.Database(new Uint8Array(buffer));
-        saveMap(db, buffer);
-        window.history.replaceState(null, null, window.location.pathname);
-      }).catch(err => {
-        console.log(err);
+      
+      storage.getItem(url).then(value => {
+        if (value) {
+          sessionStorage.setItem("activeLayer", url);
+          window.history.replaceState(null, null, window.location.pathname);
+          app.views.main.router.navigate("/map/");
+        } else {
+          fetch(url).then(response => {
+            return response.arrayBuffer();
+          }).then(buffer => {
+            const db = new SQL.Database(new Uint8Array(buffer));
+            saveMap(db, buffer, url);
+            // sessionStorage.setItem("activeLayer", url);
+            // window.history.replaceState(null, null, window.location.pathname);
+            // app.views.main.router.navigate("/map/");
+          }).catch(err => {
+            console.log(err);
+          });
+        }
       });
     }
+
+    // if (app.utils.parseUrlQuery(document.URL).key) {
+    //   const key = app.utils.parseUrlQuery(document.URL).key;
+    //   storage.getItem(key).then(function (value) {
+    //     // $$("#map-title").html("${value.name}");
+    //     sessionStorage.setItem("activeLayer", key);
+    //     app.views.main.router.navigate("/map/");
+    //   });
+    // }
+
     loadSavedMaps();
     if (app.views.current.router.currentRoute.url == "/map/" && sessionStorage.getItem("activeLayer")) {
       loadMap();

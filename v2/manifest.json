@@ -1,5 +1,5 @@
 {
-  "name": "GPS Maps",
+  "name": "My Maps",
   "short_name": "Maps",
   "description": "An offline map viewer, built for the mobile web",
   "start_url": "index.html",
