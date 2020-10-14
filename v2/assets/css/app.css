@@ -55,6 +55,10 @@
   content: "gps_not_fixed";
 }
 
+.leaflet-control-locate {
+  display: none;
+}
+
 @media screen and (max-device-width: 320px) and (orientation: portrait){
   .navbar .title {
     font-size: 17px;

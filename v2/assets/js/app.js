@@ -45,6 +45,12 @@ const app = new Framework7({
     popup: {
       el: "#add-popup"
     }
+  }, {
+    name: "collections",
+    path: "/collections/",
+    popup: {
+      el: "#collections-popup"
+    }
   }],
   touch: {
     tapHold: true
@@ -75,7 +81,7 @@ const controls = {
   locateCtrl: L.control.locate({
     icon: "gps_fixed",
     iconLoading: "gps_not_fixed",
-    setView: "untilPanOrZoom",
+    setView: "untilPan",
     cacheLocation: true,
     position: "topleft",
     flyTo: false,
@@ -84,16 +90,24 @@ const controls = {
       interactive: false
     },
     markerStyle: {
-      interactive: false
+      interactive: true
+    },
+    metric: false,
+    strings: {
+      title: "Zoom to my location",
+      popup: function(options) {
+        const loc = controls.locateCtrl._marker.getLatLng();
+        return `<div style="text-align: center;">You are within ${Number(options.distance).toLocaleString()} ${options.unit}<br>from <strong>${loc.lat.toFixed(6)}</strong>, <strong>${loc.lng.toFixed(6)}</strong></div>`;
+      }
     },
     locateOptions: {
-      enableHighAccuracy: true/*,
-      maxZoom: 17*/
+      enableHighAccuracy: true,
+      maxZoom: 18
     },
     iconElementTag: "i",
     createButtonCallback: function (container, options) {
       const link = L.DomUtil.create("a", "gps-btn link icon-only", $$("#map-btns")[0]);
-      link.title = "Zoom to my location";
+      link.title = options.strings.title;
       const icon = L.DomUtil.create(options.iconElementTag, "icon material-icons", link);
       return { link: link, icon: icon };
     },
@@ -246,6 +260,7 @@ function fetchFile() {
 }
 
 function loadRaster(file) {
+  app.progressbar.show();
   const reader = new FileReader();
   reader.onload = function(e) {
     const db = new SQL.Database(new Uint8Array(reader.result));
@@ -376,6 +391,8 @@ function loadMap() {
     }).on("databaseloaded", function(e) {
       $$(".leaflet-control-attribution").html($$(".leaflet-control-attribution").html().replace("<a", "<a class='external' target='_blank'"));
       app.progressbar.hide();
+    }).on("remove", function(e) {
+      layer._db.close();
     });
     layers.raster.addLayer(layer);
   });

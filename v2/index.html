@@ -9,13 +9,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="#007aff">
     <meta name="description" content="">
     <meta name="author" content="Bryan McBride">
-    <title>My Maps</title>
+    <title>Maps</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
     <link rel="stylesheet" href="assets/vendor/framework7-5.7.12/css/framework7.bundle.min.css">
     <link rel="stylesheet" href="assets/vendor/leaflet-1.7.1/leaflet.css">
+    <link rel="stylesheet" href="assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.css">
     <link rel="stylesheet" href="assets/css/app.css">
   </head>
   <body>
@@ -39,7 +40,7 @@
               <div class="block">
                 <p>Save maps to your device for offline viewing and navigation.</p>
               </div>
-              <div class="block-title text-color-blue">My Maps</div>
+              <div class="block-title text-color-blue">Maps</div>
               <div class="list">
                 <ul>
                   <li>
@@ -97,7 +98,7 @@
                   <i class="icon material-icons">menu</i>
                 </a>
               </div>  
-              <div class="title sliding">My Maps</div>
+              <div class="title sliding">Maps</div>
                 <div class="right">
                   <a class="link icon-only searchbar-enable" data-searchbar=".maplist-searchbar">
                     <i class="icon material-icons">search</i>
@@ -179,12 +180,25 @@
             <div class="page-content">
               <div class="list no-chevron">
                 <ul>
-                  <li>
+                  <!-- <li>
+                    <a href="#" class="item-link item-content" onclick="app.views.main.router.navigate('/collections/');">
+                      <div class="item-media"><i class="icon material-icons">search</i></div>
+                      <div class="item-inner">
+                        <div class="item-title">
+                          From A Collection
+                          <div class="item-footer">
+                            Search collections of available maps
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <li> -->
                     <a href="#" class="item-link item-content" onclick="rasterInput.click();">
                       <div class="item-media"><i class="icon material-icons">sd_storage</i></div>
                       <div class="item-inner">
                         <div class="item-title">
-                          From Storage Locations
+                          From Storage
                           <div class="item-footer">
                             Import a map from a cloud storage app or from a location on your device
                           </div>
@@ -199,11 +213,61 @@
                         <div class="item-title">
                           From The Web
                           <div class="item-footer">
-                            Tap to enter a map URL
+                            Enter a map URL
                           </div>
                         </div>
                       </div>
                     </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collections Popup -->
+      <div class="popup popup-tablet-fullscreen" id="collections-popup">
+        <div class="view">
+          <div class="page" data-name="collections">
+            <div class="navbar">
+              <div class="navbar-bg"></div>
+              <div class="navbar-inner">
+                <div class="left">
+                  <a href="#" class="link popup-close">
+                    <i class="icon material-icons">arrow_back</i>
+                  </a>
+                </div>
+                <div class="title">
+                  Map Collections
+                </div>
+              </div>
+            </div>
+            <div class="page-content">
+              <!-- <div class="list links-list">
+                <ul>
+                  <li><a href="#">Link 1</a></li>
+                  <li><a href="#">Link 2</a></li>
+                  <li><a href="#">Link 3</a></li>
+                </ul>
+              </div> -->
+              <div class="list accordion-list">
+                <ul>
+                  <li class="accordion-item">
+                    <a href="" class="item-link item-content">
+                      <div class="item-inner">
+                        <div class="item-title">Virginia State Parks</div>
+                      </div>
+                    </a>
+                    <div class="accordion-item-content">Item 1 content ...</div>
+                  </li>
+                  <li class="accordion-item">
+                    <a href="" class="item-link item-content">
+                      <div class="item-inner">
+                        <div class="item-title">Item 2</div>
+                      </div>
+                    </a>
+                    <div class="accordion-item-content">Item 2 content ...</div>
                   </li>
                 </ul>
               </div>
