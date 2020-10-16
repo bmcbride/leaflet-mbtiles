@@ -1,0 +1,22 @@
+.leaflet-measure-path-measurement {
+    position: absolute;
+    font-size: 12px;
+    color: black;
+    text-shadow: -2px  0 0 white,
+                 -2px -2px 0 white,
+                  0 -2px 0 white,
+                  2px -2px 0 white,
+                  2px  0 0 white,
+                  2px  2px 0 white,
+                  0  2px 0 white,
+                 -2px  2px 0 white;
+    white-space: nowrap;
+    transform-origin: 0;
+    pointer-events: none;
+}
+
+.leaflet-measure-path-measurement > div {
+    position: relative;
+    margin-top: -25%;
+    left: -50%;
+}

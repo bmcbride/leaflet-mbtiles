@@ -14,9 +14,10 @@
     <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-    <link rel="stylesheet" href="assets/vendor/framework7-5.7.12/css/framework7.bundle.min.css">
+    <link rel="stylesheet" href="assets/vendor/framework7-5.7.13/css/framework7.bundle.min.css">
     <link rel="stylesheet" href="assets/vendor/leaflet-1.7.1/leaflet.css">
     <link rel="stylesheet" href="assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.css">
+    <link rel="stylesheet" href="assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.css">
     <link rel="stylesheet" href="assets/css/app.css">
   </head>
   <body>
@@ -36,11 +37,11 @@
               </div>
             </div>
             <div class="page-content">
-              <div class="block-title text-color-blue">About</div>
+              <div class="block-title">About</div>
               <div class="block">
                 <p>Save maps to your device for offline viewing and navigation.</p>
               </div>
-              <div class="block-title text-color-blue">Maps</div>
+              <div class="block-title">Storage</div>
               <div class="list">
                 <ul>
                   <li>
@@ -57,7 +58,7 @@
                   </li>
                 </ul>
               </div>
-              <div class="block-title text-color-blue">Open Source Libraries</div>
+              <div class="block-title">Open Source Libraries</div>
               <div class="list links-list">
                 <ul>
                   <li>
@@ -80,6 +81,104 @@
                   <li>Developed by Bryan McBride</li>
                 </ul>
               </div> -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-right panel-cover">
+        <div class="view">
+          <div class="page">
+            <div class="navbar">
+              <div class="navbar-bg"></div>
+              <div class="navbar-inner">
+                <div class="title">Settings</div>
+                <div class="right">
+                  <a href="#" class="link icon-only panel-close" data-panel="right">
+                    <i class="icon material-icons">close</i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="page-content" style="overflow: auto;">
+              <div class="block-title">Map Opacity</div>
+              <div class="list simple-list">
+                <ul>
+                  <li style="line-height: 100%;">
+                    <div class="item-cell width-auto flex-shrink-0">
+                      <a href="#" class="link icon-only" onclick="decreaseOpacity();">
+                        <i class="icon material-icons">remove_circle_outline</i>
+                      </a>
+                    </div>
+                    <div class="item-cell flex-shrink-3">
+                      <div id="opacity-range" class="range-slider" data-label="false"></div>
+                    </div>
+                    <div class="item-cell width-auto flex-shrink-0">
+                      <a href="#" class="link icon-only" onclick="increaseOpacity();">
+                        <i class="icon material-icons">add_circle_outline</i>
+                      </a>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div class="block-title">Basemaps</div>
+              <div class="list">
+                <ul>
+                  <li>
+                    <label class="item-radio item-content">
+                      <input type="radio" name="basemap" value="Streets"/>
+                      <i class="icon icon-radio"></i>
+                      <div class="item-inner">
+                        <div class="item-title">Street Map</div>
+                      </div>
+                    </label>
+                  </li>
+                  <li>
+                    <label class="item-radio item-content">
+                      <input type="radio" name="basemap" value="Aerial"/>
+                      <i class="icon icon-radio"></i>
+                      <div class="item-inner">
+                        <div class="item-title">Aerial Image</div>
+                      </div>
+                    </label>
+                  </li>
+                  <li>
+                    <label class="item-radio item-content">
+                      <input type="radio" name="basemap" value="Topo"/>
+                      <i class="icon icon-radio"></i>
+                      <div class="item-inner">
+                        <div class="item-title">Topo Map</div>
+                      </div>
+                    </label>
+                  </li>
+                  <li>
+                    <label class="item-radio item-content">
+                      <input type="radio" name="basemap" value="Charts"/>
+                      <i class="icon icon-radio"></i>
+                      <div class="item-inner">
+                        <div class="item-title">NOAA Chart</div>
+                      </div>
+                    </label>
+                  </li>
+                  <li>
+                    <label class="item-radio item-content">
+                      <input type="radio" name="basemap" value="none" checked="checked"/>
+                      <i class="icon icon-radio"></i>
+                      <div class="item-inner">
+                        <div class="item-title">None</div>
+                      </div>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+              <div class="block-title">Tools</div>
+              <div class="list">
+                <ul>
+                  <li><a class="item-link list-button panel-close" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">Zoom to Map</a></li>
+                  <li><a class="item-link list-button panel-close" onclick="startMeasurement();">Measure Distance</a></li>
+                  <li><a class="item-link list-button panel-close" onclick="launchGmaps();">Open Google Maps</a></li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -119,27 +218,6 @@
                 </form>
               </div>
           </div>
-          <!-- <div class="fab fab-right-bottom">
-            <a href="#" onclick="rasterInput.click();">
-              <i class="icon material-icons">add</i>
-            </a>
-          </div> -->
-          <!-- <div class="fab fab-right-bottom" id="add-fab">
-            <a href="#">
-              <i class="icon material-icons">add</i>
-              <i class="icon material-icons">close</i>
-            </a>
-            <div class="fab-buttons fab-buttons-top">
-              <a href="#" class="fab-label-button" onclick="rasterInput.click(); app.fab.close('#add-fab');">
-                <i class="icon material-icons">sd_storage</i>
-                <span class="fab-label">MBTiles file on device</span>
-              </a>
-              <a href="#" class="fab-label-button" onclick="fetchFile(); app.fab.close('#add-fab');">
-                <i class="icon material-icons">link</i>
-                <span class="fab-label">MBTiles file from URL</span>
-              </a>
-            </div>
-          </div> -->
           <div class="page-content">
             <div class="searchbar-backdrop"></div>
             <div class="list simple-list searchbar-not-found">
@@ -290,38 +368,39 @@
                 </div>
                 <div class="title" id="map-title"></div>
                 <div class="right" id="map-btns">
-                  <!-- <a href="#" class="link icon-only" onclick="vectorInput.click();">
-                    <i class="icon material-icons">place</i>
-                  </a> -->
-                  <a href="#" class="link icon-only" title="Zoom to map bounds" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">
-                    <i class="icon material-icons">zoom_out_map</i>
+                  <a href="#" class="link icon-only panel-open" data-panel="right">
+                    <i class="icon material-icons">menu</i>
                   </a>
-                  <!-- <a id="gps-fab" href="#" class="link icon-only"> -->
-                    <!-- <i class="icon material-icons">zoom_out_map</i> -->
-                  <!-- </a> -->
                 </div>
               </div>
             </div>
-            <!-- <div class="fab fab-right-bottom" id="gps-fab"></div> -->
+            <div class="fab fab-right-bottom" id="gps-fab" style="bottom: 25px; right: 10px;">
+              <!-- <a href="#" id="gps-btn" class="color-white" onclick="app.map.getView().setCenter(app.geolocation.getPosition());">
+                <i class="icon material-icons color-blue" id="gps-icon">gps_not_fixed</i>
+              </a> -->
+            </div>
             <div class="page-content">
-              <div id="map"></div>
+              <div id="map">
+                <div class="crosshair" id="crosshair"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <script src="assets/vendor/framework7-5.7.12/js/framework7.bundle.min.js"></script>
-    <script src="assets/vendor/sqljs-1.3.0/sql-wasm.js"></script>
+    <script src="assets/vendor/framework7-5.7.13/js/framework7.bundle.min.js"></script>
+    <script src="assets/vendor/sqljs-1.3.2/sql-wasm.js"></script>
     <script src="assets/vendor/localForage-1.9.0/localforage.min.js"></script>
     <script src="assets/vendor/leaflet-1.7.1/leaflet.js"></script>
     <script src="assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.js"></script>
     <script src="assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js"></script>
+    <script src="assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.js"></script>
     <script src="assets/js/app.js"></script>
-    <script>
+    <!-- <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("service-worker.js");
       }
-    </script>
+    </script> -->
     <noscript>This website requires JavaScript!</noscript>
   </body>
 </html>

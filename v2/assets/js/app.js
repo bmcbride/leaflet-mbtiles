@@ -32,6 +32,7 @@ const app = new Framework7({
         },
         closed: function() {
           // $$("#map-title").html(null);
+          app.range.setValue("#opacity-range", 100);
           layers.raster.clearLayers();
           layers.vector.clearLayers();
           map.removeControl(controls.layerCtrl);
@@ -66,8 +67,92 @@ const map = L.map("map", {
 
 const layers = {
   raster: L.layerGroup().addTo(map),
-  vector: L.featureGroup().addTo(map)
+  vector: L.featureGroup().addTo(map),
+  basemaps: {
+    "Streets": L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.@2xpng", {
+      maxNativeZoom: 18,
+      maxZoom: map.getMaxZoom(),
+      attribution: `© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>`,
+    }),
+    "Aerial": L.tileLayer("https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}", {
+      maxNativeZoom: 16,
+      maxZoom: map.getMaxZoom(),
+      attribution: "USGS",
+    }),
+    "Topo": L.tileLayer("https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}", {
+      maxNativeZoom: 16,
+      maxZoom: map.getMaxZoom(),
+      attribution: "USGS",
+    }),
+    "Charts": L.tileLayer("https://tileservice.charts.noaa.gov/tiles/50000_1/{z}/{x}/{y}.png", {
+      maxNativeZoom: 18,
+      maxZoom: map.getMaxZoom(),
+      attribution: "NOAA",
+    })
+  },
+  measure: {
+    group: L.featureGroup().addTo(map),
+    line: L.polyline([], {
+      interactive: false,
+      // dashArray: "0 10 0 10",
+      weight: 3
+    })
+    .addTo(map)
+    .showMeasurements({imperial: true, showTotalDistance: true, minDistance: 0})
+  }
 };
+
+const measure = {
+  clearMeasure: function() {
+    layers.measure.group.clearLayers();
+    layers.measure.line.setLatLngs([]);
+    map.off("click", measure.clickListener);
+    map.off("drag", measure.dragListener);
+    map.off("zoom", measure.dragListener);
+    $$(".crosshair").css("visibility", "hidden");
+    $$(".toast-text").html("Tap to add measurement segments.");
+  },
+  clickListener: function() {
+    layers.measure.line.addLatLng(map.getCenter());
+    layers.measure.line.updateMeasurements();
+    layers.measure.group.addLayer(
+      L.circleMarker(map.getCenter(), {
+        interactive: false,
+        color: "#2A93EE",
+        fillColor: "#fff",
+        fillOpacity: 1,
+        interactive: false,
+        opacity: 1,
+        radius: 5,
+        weight: 2
+      })
+    )
+    getTotalMeasurement();
+  },
+  dragListener: function() {
+    let points = layers.measure.line.getLatLngs();
+    if (points.length > 0) {
+      if (points.length > 1) {
+        points.pop(); 
+      }
+      points.push(map.getCenter());
+      layers.measure.line.setLatLngs(points);
+    }
+    $$(".toast-text").html(`Total length: ${getTotalMeasurement()}`);
+  }
+}
+
+function getTotalMeasurement() {
+  var measureSegments = layers.measure.line._measurementLayer.getLayers();
+  var totalSegments = measureSegments.length;
+  if (totalSegments > 0) {
+    var lastSegment = measureSegments[totalSegments - 1];
+    var totalDist = lastSegment._measurement;
+    // layers.measure.line._measurementLayer.getLayerId(lastSegment)
+    layers.measure.line._measurementLayer.removeLayer(lastSegment._leaflet_id);
+    return(totalDist);
+  }
+}
 
 const controls = {
   attributionCtrl: L.control.attribution({
@@ -106,9 +191,12 @@ const controls = {
     },
     iconElementTag: "i",
     createButtonCallback: function (container, options) {
-      const link = L.DomUtil.create("a", "gps-btn link icon-only", $$("#map-btns")[0]);
+      // const link = L.DomUtil.create("a", "gps-btn link icon-only", $$("#map-btns")[0]);
+      // link.title = options.strings.title;
+      // const icon = L.DomUtil.create(options.iconElementTag, "icon material-icons", link);
+      const link = L.DomUtil.create("a", "gps-btn color-white", $$("#gps-fab")[0]);
       link.title = options.strings.title;
-      const icon = L.DomUtil.create(options.iconElementTag, "icon material-icons", link);
+      const icon = L.DomUtil.create(options.iconElementTag, "icon material-icons color-black", link);
       return { link: link, icon: icon };
     },
     onLocationError: function(e) {
@@ -160,6 +248,23 @@ $$(".gps-btn").on("click", function (e) {
   } else {
     $$(".gps-btn i").removeClass("gps_not_fixed");
     $$(".gps-btn i").addClass("gps_fixed");
+  }
+  if (controls.locateCtrl._isFollowing()) {
+    $$(".gps-btn i").removeClass("color-black");
+    $$(".gps-btn i").addClass("color-blue");
+  } else {
+    $$(".gps-btn i").removeClass("color-blue");
+    $$(".gps-btn i").addClass("color-black");
+  }
+});
+
+map.on("moveend", function(e) {
+  if (controls.locateCtrl._isFollowing()) {
+    $$(".gps-btn i").removeClass("color-black");
+    $$(".gps-btn i").addClass("color-blue");
+  } else {
+    $$(".gps-btn i").removeClass("color-blue");
+    $$(".gps-btn i").addClass("color-black");
   }
 });
 
@@ -449,13 +554,74 @@ function iosChecks() {
   }
 }
 
+function startMeasurement(){
+  app.toast.create({
+    text: "Tap to add measurement segments.",
+    closeButton: true,
+    closeButtonText: "Clear",
+    on: {
+      close: function () {
+        measure.clearMeasure();
+      },
+      open: function() {
+        $$(".crosshair").css("visibility", "visible");
+        map.on("click", measure.clickListener);
+        map.on("drag", measure.dragListener);
+        map.on("zoom", measure.dragListener);
+      }
+    }
+  }).open();
+}
+
+
+function increaseOpacity() {
+  const slider = app.range.get(".range-slider");
+  slider.setValue(slider.getValue() + 5);
+}
+
+function decreaseOpacity() {
+  const slider = app.range.get(".range-slider");
+  slider.setValue(slider.getValue() - 5);
+}
+
+function launchGmaps() {
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+  const url = `https://www.google.com/maps/@?api=1&map_action=map&center=${center.lat},${center.lng}&zoom=${Math.round(zoom)}`;
+  window.open(url);
+}
+
+$$("input[type=radio][name=basemap]").change(function() {
+  for (const key in layers.basemaps) {
+    if (key == this.value && key != "none") {
+      map.addLayer(layers.basemaps[key]);
+    } else {
+      map.removeLayer(layers.basemaps[key]);
+    }
+  }
+});
+
 app.on("init", function() {
   iosChecks();
   app.progressbar.show();
+
+  app.range.create({
+    el: ".range-slider",
+    min: 0,
+    max: 100,
+    step: 1,
+    value: 100,
+    on: {
+      change: function (e) {
+        const opacity = e.value / 100;
+        layers.raster.getLayers()[0].setOpacity(opacity);
+      }
+    }
+  });
   
   initSqlJs({
     locateFile: function() {
-      return "assets/vendor/sqljs-1.3.0/sql-wasm.wasm";
+      return "assets/vendor/sqljs-1.3.2/sql-wasm.wasm";
     }
   }).then(function(sql){
     SQL = sql;

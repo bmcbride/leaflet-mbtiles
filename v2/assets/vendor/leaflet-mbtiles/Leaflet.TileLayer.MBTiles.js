@@ -168,7 +168,8 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 
 		if ('tile_data' in row) {
 			return window.URL.createObjectURL(new Blob([row.tile_data], {
-				type: 'image/png'
+				// type: 'image/png'
+				type: this._format
 			}));
 		} else {
 			return L.Util.emptyImageUrl;
