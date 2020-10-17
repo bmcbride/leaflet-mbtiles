@@ -29,10 +29,10 @@ workbox.precaching.precacheAndRoute([
   {url: 'assets/vendor/leaflet-1.7.1/leaflet.js', revision: '09.08.20.1'},
   {url: 'assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.css', revision: '09.08.20.1'},
   {url: 'assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.js', revision: '09.08.20.1'},
-  {url: 'assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.css', revision: '10.16.20.1'},
+  {url: 'assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.css', revision: '10.16.20.2'},
   {url: 'assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.js', revision: '10.16.20.1'},
   {url: 'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js', revision: '10.14.20.1'},
-  {url: 'assets/js/app.js', revision: '10.16.20.2'},
+  {url: 'assets/js/app.js', revision: '10.16.20.3'},
   {url: 'assets/css/app.css', revision: '10.16.20.2'}
 ], {
   // Ignore all URL parameters.

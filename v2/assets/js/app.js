@@ -138,7 +138,7 @@ const measure = {
       points.push(map.getCenter());
       layers.measure.line.setLatLngs(points);
     }
-    $$(".toast-text").html(`Total length: ${getTotalMeasurement()}`);
+    $$(".toast-text").html(`Total distance: ${getTotalMeasurement()}`);
   }
 }
 
@@ -558,6 +558,7 @@ function startMeasurement(){
   app.toast.create({
     text: "Tap to add measurement segments.",
     closeButton: true,
+    closeButtonColor: "white",
     closeButtonText: "Clear",
     on: {
       close: function () {
