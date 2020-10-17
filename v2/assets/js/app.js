@@ -496,8 +496,6 @@ function loadMap() {
     }).on("databaseloaded", function(e) {
       $$(".leaflet-control-attribution").html($$(".leaflet-control-attribution").html().replace("<a", "<a class='external' target='_blank'"));
       app.progressbar.hide();
-    }).on("remove", function(e) {
-      layer._db.close();
     });
     layers.raster.addLayer(layer);
   });

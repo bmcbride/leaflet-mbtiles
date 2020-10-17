@@ -1,14 +1,17 @@
-// import SQL from 'sql.js';
-
 /*
 🍂class TileLayer.MBTiles
 Loads tiles from a [`.mbtiles` file](https://github.com/mapbox/mbtiles-spec).
 If they exist in the given file, it will handle the following metadata rows:
 */
 
+/*
+additions from https://gitlab.com/WorldMaker/Leaflet.TileLayer.MBTiles/-/blob/master/index.js
+*/
+
 L.TileLayer.MBTiles = L.TileLayer.extend({
 	
 	initialize: function (url, options) {
+		const layer = this;
 		this._options = options;
 		this._databaseIsLoaded = false;
 
@@ -16,7 +19,6 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 			fetch(url).then(response => {
 				return response.arrayBuffer();
 			}).then(buffer => {
-				const layer = this;
 				initSqlJs().then(function(SQL){
 					layer._openDB(buffer, SQL);
 				});
@@ -26,14 +28,26 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 				});
 			})
 		} else if (url instanceof ArrayBuffer) {
-			const layer = this;
 			initSqlJs().then(function(SQL){
 				layer._openDB(url, SQL);
 			});
 		} else {
 			this.fire('databaseerror');
 		}
-
+		this.on('tileunload', function (event) {
+			if (event.tile && event.tile.src != L.Util.emptyImageUrl) {
+				URL.revokeObjectURL(event.tile.src);
+			}
+		});
+		const closeDb = function () { return layer._db.close(); };
+		this.on('remove', function () {
+			if (layer._databaseIsLoaded) {
+				closeDb();
+			}
+			else {
+				layer.on('databaseloaded', closeDb);
+			}
+		});
 		return L.TileLayer.prototype.initialize.call(this, url, options);
 	},
 
@@ -143,13 +157,11 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 		if (this._databaseIsLoaded) {
 			L.DomEvent.on(tile, 'load', L.bind(this._tileOnLoad, this, done, tile));
 			L.DomEvent.on(tile, 'error', L.bind(this._tileOnError, this, done, tile));
-
 			tile.src = this.getTileUrl(coords);
 		} else {
 			this.on('databaseloaded', function () {
 				L.DomEvent.on(tile, 'load', L.bind(this._tileOnLoad, this, done, tile));
 				L.DomEvent.on(tile, 'error', L.bind(this._tileOnError, this, done, tile));
-
 				tile.src = this.getTileUrl(coords);
 			}.bind(this));
 		}
@@ -168,7 +180,6 @@ L.TileLayer.MBTiles = L.TileLayer.extend({
 
 		if ('tile_data' in row) {
 			return window.URL.createObjectURL(new Blob([row.tile_data], {
-				// type: 'image/png'
 				type: this._format
 			}));
 		} else {
