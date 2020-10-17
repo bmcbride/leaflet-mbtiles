@@ -7,10 +7,10 @@
 
 /* Custom color theme */
 :root {
-  --f7-theme-color: #8e8e93;
-  --f7-theme-color-rgb: 142, 142, 147;
-  --f7-theme-color-shade: #79797f;
-  --f7-theme-color-tint: #a3a3a7;
+  --f7-theme-color: #000000;
+  --f7-theme-color-rgb: 0, 0, 0;
+  --f7-theme-color-shade: #000000;
+  --f7-theme-color-tint: #141414;
 }
 /* Invert navigation bars to fill style */
 :root,
@@ -43,9 +43,9 @@
 .navbar-large.navbar-transparent {
   --f7-navbar-large-title-text-color: #000;
 
-  --r: 142;
-  --g: 142;
-  --b: 147;
+  --r: 0;
+  --g: 0;
+  --b: 0;
   --progress: var(--f7-navbar-large-collapse-progress);
   --f7-bars-link-color: rgb(
     calc(var(--r) + (255 - var(--r)) * var(--progress)),

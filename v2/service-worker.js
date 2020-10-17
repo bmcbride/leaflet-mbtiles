@@ -6,8 +6,8 @@ workbox.setConfig({
 });
 
 workbox.precaching.precacheAndRoute([
-  {url: 'index.html', revision: '10.16.20.1'},
-  {url: 'manifest.json', revision: '10.14.20.1'},
+  {url: 'index.html', revision: '10.16.20.2'},
+  {url: 'manifest.json', revision: '10.14.20.2'},
   {url: 'assets/img/apple-touch-icon.png', revision: '09.08.20.1'},
   {url: 'assets/img/favicon-32x32.png', revision: '09.08.20.1'},
   {url: 'assets/img/favicon-16x16.png', revision: '09.08.20.1'},
@@ -33,7 +33,7 @@ workbox.precaching.precacheAndRoute([
   {url: 'assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.js', revision: '10.16.20.1'},
   {url: 'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js', revision: '10.14.20.1'},
   {url: 'assets/js/app.js', revision: '10.16.20.1'},
-  {url: 'assets/css/app.css', revision: '10.16.20.1'}
+  {url: 'assets/css/app.css', revision: '10.16.20.2'}
 ], {
   // Ignore all URL parameters.
   ignoreURLParametersMatching: [/.*/]
