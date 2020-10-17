@@ -32,7 +32,7 @@ workbox.precaching.precacheAndRoute([
   {url: 'assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.css', revision: '10.16.20.1'},
   {url: 'assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.js', revision: '10.16.20.1'},
   {url: 'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js', revision: '10.14.20.1'},
-  {url: 'assets/js/app.js', revision: '10.16.20.1'},
+  {url: 'assets/js/app.js', revision: '10.16.20.2'},
   {url: 'assets/css/app.css', revision: '10.16.20.2'}
 ], {
   // Ignore all URL parameters.
