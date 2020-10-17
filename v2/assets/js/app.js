@@ -314,7 +314,7 @@ $$(document).on("taphold", ".overlay", function() {
               const name = $$("#map-name").val();
               const description = $$("#map-description").val();
               if (name.length > 0) {
-                app.progressbar.show("white");
+                app.progressbar.show();
                 storage.getItem(key).then(function (value) {
                   value.name = name;
                   value.description = description;
@@ -357,7 +357,7 @@ $$(document).on("taphold", ".overlay", function() {
 
 function fetchFile() {
   app.dialog.prompt(null, "Map URL", function (url) {
-    app.progressbar.show("white");
+    app.progressbar.show();
     fetch(url).then(response => {
       return response.arrayBuffer();
     }).then(buffer => {
@@ -370,7 +370,7 @@ function fetchFile() {
 }
 
 function loadRaster(file) {
-  app.progressbar.show("white");
+  app.progressbar.show();
   const reader = new FileReader();
   reader.onload = function(e) {
     const db = new SQL.Database(new Uint8Array(reader.result));
@@ -433,7 +433,7 @@ function saveMap(db, file, source) {
 }
 
 function loadSavedMaps() {
-  app.progressbar.show("white");
+  app.progressbar.show();
   const maps = [];
   let size = 0;
   $$("#map-list").empty();
@@ -489,7 +489,7 @@ function loadSavedMaps() {
 }
 
 function loadMap() {
-  app.progressbar.show("white");
+  app.progressbar.show();
   const key = sessionStorage.getItem("activeLayer");
   storage.getItem(key).then(function (value) {
     $$("#map-title").html(value.name);
@@ -526,7 +526,7 @@ function formatProperty(value) {
 
 function emptyDatabase() {
   app.dialog.confirm("Delete all saved maps?", null, function() {
-    app.progressbar.show("white");
+    app.progressbar.show();
     storage.clear().then(function() {
       loadSavedMaps();
       app.progressbar.hide();
@@ -607,7 +607,7 @@ $$("input[type=radio][name=basemap]").change(function() {
 
 app.on("init", function() {
   iosChecks();
-  app.progressbar.show("white");
+  app.progressbar.show();
 
   app.range.create({
     el: ".range-slider",
