@@ -177,6 +177,11 @@ const controls = {
     markerStyle: {
       interactive: true
     },
+    compassStyle: {
+      radius: 10,
+      width: 10,
+      depth: 7
+    },
     metric: false,
     strings: {
       title: "Zoom to my location",
