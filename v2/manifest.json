@@ -2,7 +2,6 @@
   "name": "Maps",
   "short_name": "Maps",
   "description": "An offline map viewer, built for the mobile web",
-  "scope": "/",
   "start_url": "index.html",
   "display": "standalone",
   "background_color":  "#000000",
