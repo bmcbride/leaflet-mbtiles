@@ -6,7 +6,7 @@ workbox.setConfig({
 });
 
 workbox.precaching.precacheAndRoute([
-  {url: 'index.html', revision: '10.16.20.3'},
+  {url: 'index.html', revision: '12.09.20.1'},
   {url: 'manifest.json', revision: '10.14.20.2'},
   {url: 'assets/img/apple-touch-icon.png', revision: '09.08.20.1'},
   {url: 'assets/img/favicon-32x32.png', revision: '09.08.20.1'},
@@ -15,8 +15,8 @@ workbox.precaching.precacheAndRoute([
   {url: 'assets/img/ios-share.png', revision: '09.08.20.1'},
   {url: 'assets/img/crosshair.svg', revision: '10.16.20.1'},
   {url: 'assets/fonts/MaterialIcons-Regular.woff2', revision: '09.08.20.1'},
-  {url: 'assets/vendor/framework7-5.7.13/css/framework7.bundle.min.css', revision: '09.08.20.1'},
-  {url: 'assets/vendor/framework7-5.7.13/js/framework7.bundle.min.js', revision: '09.08.20.1'},
+  {url: 'assets/vendor/framework7-5.7.14/css/framework7.bundle.min.css', revision: '12.09.20.1'},
+  {url: 'assets/vendor/framework7-5.7.14/js/framework7.bundle.min.js', revision: '12.09.20.1'},
   {url: 'assets/vendor/sqljs-1.3.2/sql-wasm.js', revision: '09.08.20.1'},
   {url: 'assets/vendor/sqljs-1.3.2/sql-wasm.wasm', revision: '09.08.20.1'},
   {url: 'assets/vendor/localForage-1.9.0/localforage.min.js', revision: '09.08.20.1'},
