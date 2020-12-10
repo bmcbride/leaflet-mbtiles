@@ -55,6 +55,18 @@ const app = new Framework7({
   }],
   touch: {
     tapHold: true
+  },
+  on: {
+    sortableEnable: function(listEl) {
+      $$("#sort-icon").html("save");
+    },
+    sortableDisable: function(listEl) {
+      $$("#sort-icon").html("sort");
+      orderList();
+    }/*,
+    sortableSort: function(listEl, indexes) {
+      console.log(indexes);
+    }*/
   }
 });
 
@@ -420,16 +432,31 @@ function saveMap(db, file, source) {
     mbtiles: file
   };
 
-  storage.setItem(key, value).then(function (value) {
-    // app.views.main.router.back();
-    sessionStorage.setItem("activeLayer", key);
-    window.history.replaceState(null, null, window.location.pathname);
-    app.views.main.router.navigate("/map/");
-
-    loadSavedMaps();
+  storage.length().then(function(numberOfKeys) {
+    value.index = numberOfKeys;
+    storage.setItem(key, value).then(function (value) {
+      sessionStorage.setItem("activeLayer", key);
+      window.history.replaceState(null, null, window.location.pathname);
+      app.views.main.router.navigate("/map/");
+  
+      loadSavedMaps();
+    }).catch(function(err) {
+      alert("Error saving map!");
+    });
   }).catch(function(err) {
-    alert("Error saving map!");
+    alert("Error getting count of saved maps!");
   });
+
+  // storage.setItem(key, value).then(function (value) {
+  //   // app.views.main.router.back();
+  //   sessionStorage.setItem("activeLayer", key);
+  //   window.history.replaceState(null, null, window.location.pathname);
+  //   app.views.main.router.navigate("/map/");
+
+  //   loadSavedMaps();
+  // }).catch(function(err) {
+  //   alert("Error saving map!");
+  // });
 }
 
 function loadSavedMaps() {
@@ -448,7 +475,8 @@ function loadSavedMaps() {
       }).then(function() {
         $$("#database-size").html(formatSize(size));
         maps.sort(function(a, b) {
-          return (a.value.name.toUpperCase() < b.value.name.toUpperCase()) ? -1 : (a.value.name.toUpperCase() > b.value.name.toUpperCase()) ? 1 : 0;
+          // return (a.value.name.toUpperCase() < b.value.name.toUpperCase()) ? -1 : (a.value.name.toUpperCase() > b.value.name.toUpperCase()) ? 1 : 0;
+          return (a.value.index < b.value.index) ? -1 : (a.value.index > b.value.index) ? 1 : 0;
         });
         
         maps.forEach(function(map, index) {
@@ -465,6 +493,7 @@ function loadSavedMaps() {
                 </div>
               </div>
             </a>
+            <div class="sortable-handler"></div>
           </li>`;
             
           $$("#map-list").append(li);
@@ -472,6 +501,7 @@ function loadSavedMaps() {
     
         app.progressbar.hide();
       }).catch(function(err) {
+        console.log(err);
         alert("Error loading saved maps!");
       });
     } else {
@@ -514,6 +544,18 @@ function formatSize(size) {
     size = size.toFixed(1) + " KB";
   }
   return size;
+}
+
+function orderList() {
+  $$("#map-list li").each(function(i) {
+    const key = $$(this).attr("data-key");
+    storage.getItem(key).then(function (item) {
+      item.index = i;
+      storage.setItem(key, item);
+    }).catch(function(err) {
+      console.log(err);
+    });
+  });
 }
 
 function formatProperty(value) {

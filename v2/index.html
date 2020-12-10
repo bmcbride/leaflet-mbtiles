@@ -199,10 +199,13 @@
               </div>  
               <div class="title sliding">Maps</div>
                 <div class="right">
-                  <a class="link icon-only searchbar-enable" data-searchbar=".maplist-searchbar">
+                  <a class="link icon-only searchbar-enable" title="Search" data-searchbar=".maplist-searchbar">
                     <i class="icon material-icons">search</i>
                   </a>
-                  <a class="link icon-only" onclick="app.views.main.router.navigate('/add/');">
+                  <a class="link icon-only sortable-toggle" title="Order List" data-sortable=".sortable">
+                    <i class="icon material-icons" id="sort-icon">sort</i>
+                  </a>
+                  <a class="link icon-only" title="Add Map" onclick="app.views.main.router.navigate('/add/');">
                     <i class="icon material-icons">add</i>
                   </a>
                 </div>
