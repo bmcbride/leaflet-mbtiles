@@ -149,8 +149,8 @@ const measure = {
       }
       points.push(map.getCenter());
       layers.measure.line.setLatLngs(points);
+      $$(".toast-text").html(`Total distance: ${getTotalMeasurement()}`);
     }
-    $$(".toast-text").html(`Total distance: ${getTotalMeasurement()}`);
   }
 }
 
@@ -547,11 +547,16 @@ function formatSize(size) {
 }
 
 function orderList() {
-  $$("#map-list li").each(function(i) {
+  app.progressbar.show("white");
+  const items = $$("#map-list li"), count = items.length;
+  items.each(function(i) {
     const key = $$(this).attr("data-key");
     storage.getItem(key).then(function (item) {
       item.index = i;
       storage.setItem(key, item);
+      if (i == (count - 1)) {
+        app.progressbar.hide();
+      }
     }).catch(function(err) {
       console.log(err);
     });

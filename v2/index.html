@@ -28,7 +28,7 @@
             <div class="navbar">
               <div class="navbar-bg"></div>
               <div class="navbar-inner">
-                <div class="title">Settings</div>
+                <div class="title">App Settings</div>
                 <div class="right">
                   <a href="#" class="link icon-only panel-close" data-panel="left">
                     <i class="icon material-icons">close</i>
@@ -37,50 +37,84 @@
               </div>
             </div>
             <div class="page-content">
-              <div class="block-title">About</div>
-              <div class="block">
-                <p>Save maps to your device for offline viewing and navigation.</p>
-              </div>
-              <div class="block-title">Storage</div>
-              <div class="list">
+              <div class="list accordion-list" style="padding-bottom: 48px">
                 <ul>
-                  <li>
-                    <div class="item-content">
+                  <li class="accordion-item accordion-item-opened">
+                    <a href="#" class="item-content item-link">
                       <div class="item-inner">
-                        <div class="item-title" id="database-size">0</div>
-                        <div class="item-after">
-                          <a href="#" class="link icon-only panel-close" onclick="emptyDatabase();">
-                            <i class="icon material-icons color-red">delete</i>
-                          </a>
-                        </div>
+                        <div class="item-title">About</div>
+                      </div>
+                    </a>
+                    <div class="accordion-item-content">
+                      <div class="block">
+                        <p>Save maps to your device for offline viewing and navigation!</p>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="accordion-item">
+                    <a href="#" class="item-content item-link">
+                      <div class="item-inner">
+                        <div class="item-title">Disclaimer</div>
+                      </div>
+                    </a>
+                    <div class="accordion-item-content">
+                      <div class="block">
+                        <!-- <p>Disclaimer goes here...</p> -->
+                        <p style="font-style: italic;">All maps are produced and provided by 3rd parties. The accuracy of the information contained on these maps cannot be guaranteed and we are not responsible for any misuse or misrepresentation of the data.</p>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="accordion-item">
+                    <a href="#" class="item-content item-link">
+                      <div class="item-inner">
+                        <div class="item-title">Contact</div>
+                      </div>
+                    </a>
+                    <div class="accordion-item-content">
+                      <div class="block">
+                        <p>App developed by <a href="mailto:mcbride.bryan@gmail.com?subject=Maps App" class="external">Bryan McBride</a></p>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="accordion-item">
+                    <a href="#" class="item-content item-link">
+                      <div class="item-inner">
+                        <div class="item-title">Open Source Libraries</div>
+                      </div>
+                    </a>
+                    <div class="accordion-item-content">
+                      <div class="list links-list">
+                        <ul>
+                          <li>
+                            <a href="https://framework7.io/" class="external">Framework7</a>
+                          </li>
+                          <li>
+                            <a href="https://leafletjs.com/" class="external">Leaflet</a>
+                          </li>
+                          <li>
+                            <a href="https://localforage.github.io/localForage/" class="external">localForage</a>
+                          </li>
+                          <li>
+                            <a href="https://material.io/icons/" class="external">Material Icons</a>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   </li>
                 </ul>
               </div>
-              <div class="block-title">Open Source Libraries</div>
-              <div class="list links-list">
-                <ul>
+              <div class="list" style="width: 100%; position: fixed; bottom: 0px;">
+                <ul style="background-color: whitesmoke;">
                   <li>
-                    <a href="https://framework7.io/" class="external">Framework7</a>
-                  </li>
-                  <li>
-                    <a href="https://leafletjs.com/" class="external">Leaflet</a>
-                  </li>
-                  <li>
-                    <a href="https://localforage.github.io/localForage/" class="external">localForage</a>
-                  </li>
-                  <li>
-                    <a href="https://material.io/icons/" class="external">Material Icons</a>
+                    <div class="item-content">
+                      <div class="item-inner">
+                        <div class="item-title">Release Version</div>
+                        <div class="item-after">2020.12.15.1</div>
+                      </div>
+                    </div>
                   </li>
                 </ul>
               </div>
-              <!-- <div class="block-title text-color-blue">Credits</div>
-              <div class="list simple-list">
-                <ul>
-                  <li>Developed by Bryan McBride</li>
-                </ul>
-              </div> -->
             </div>
           </div>
         </div>
@@ -220,6 +254,12 @@
                   </div>
                 </form>
               </div>
+          </div>
+          <!-- Floating Action Button -->
+          <div class="fab fab-right-bottom">
+            <a href="#" title="Add Map" onclick="app.views.main.router.navigate('/add/');">
+              <i class="icon material-icons">add</i>
+            </a>
           </div>
           <div class="page-content">
             <div class="searchbar-backdrop"></div>
