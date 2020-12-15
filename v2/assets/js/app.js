@@ -345,6 +345,7 @@ $$(document).on("taphold", ".overlay", function() {
                 app.toast.create({
                   text: "Map Name required!",
                   closeButton: true,
+                  closeButtonColor: "white",
                   closeTimeout: 2000
                 }).open();
               }
@@ -596,6 +597,7 @@ function iosChecks() {
         app.toast.create({
           text: "Tap the <img src='assets/img/ios-share.png' height='18px'> button " + (app.device.ipad ? "at the top of the screen" : "below") + " to Add to Home Screen.",
           closeButton: true,
+          closeButtonColor: "white",
           position: app.device.ipad ? "center" : "bottom",
           on: {
             close: function () {
