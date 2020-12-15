@@ -30,6 +30,10 @@ const app = new Framework7({
         opened: function() {
           loadMap();
         },
+        close: function() {
+          measure.clearMeasure();
+          app.toast.close();
+        },
         closed: function() {
           // $$("#map-title").html(null);
           app.range.setValue("#opacity-range", 100);
