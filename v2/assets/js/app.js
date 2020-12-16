@@ -5,6 +5,8 @@ const storage = localforage.createInstance({
   storeName: "saved_maps"
 });
 
+let storageSize = 0;
+
 const app = new Framework7({
   root: "#app",
   theme: "md",
@@ -374,10 +376,12 @@ $$(document).on("taphold", ".overlay", function() {
 
 function fetchFile() {
   app.dialog.prompt(null, "Map URL", function (url) {
-    app.progressbar.show("white");
+    // app.progressbar.show("white");
+    app.preloader.show();
     fetch(url).then(response => {
       return response.arrayBuffer();
     }).then(buffer => {
+      app.preloader.hide();
       const db = new SQL.Database(new Uint8Array(buffer));
       saveMap(db, buffer, url);
     }).catch(err => {
@@ -387,7 +391,7 @@ function fetchFile() {
 }
 
 function loadRaster(file) {
-  app.progressbar.show("white");
+  // app.progressbar.show("white");
   const reader = new FileReader();
   reader.onload = function(e) {
     const db = new SQL.Database(new Uint8Array(reader.result));
@@ -441,10 +445,10 @@ function saveMap(db, file, source) {
     value.index = numberOfKeys;
     storage.setItem(key, value).then(function (value) {
       sessionStorage.setItem("activeLayer", key);
-      window.history.replaceState(null, null, window.location.pathname);
+      app.popup.close("#add-popup", false);
       app.views.main.router.navigate("/map/");
-  
-      loadSavedMaps();
+      addMaptoList({key: key, value: value});
+      // loadSavedMaps();
     }).catch(function(err) {
       alert("Error saving map!");
     });
@@ -455,10 +459,12 @@ function saveMap(db, file, source) {
   // storage.setItem(key, value).then(function (value) {
   //   // app.views.main.router.back();
   //   sessionStorage.setItem("activeLayer", key);
-  //   window.history.replaceState(null, null, window.location.pathname);
+  //   // window.history.replaceState(null, null, window.location.pathname);
+  //   app.popup.close("#add-popup", false);
   //   app.views.main.router.navigate("/map/");
 
-  //   loadSavedMaps();
+  //   // loadSavedMaps();
+  //   addMaptoList({key: key, value: value})
   // }).catch(function(err) {
   //   alert("Error saving map!");
   // });
@@ -467,41 +473,22 @@ function saveMap(db, file, source) {
 function loadSavedMaps() {
   app.progressbar.show("white");
   const maps = [];
-  let size = 0;
   $$("#map-list").empty();
   storage.length().then(function(numberOfKeys) {
     if (numberOfKeys > 0) {
       storage.iterate(function(value, key, iterationNumber) {
-        size += value.mbtiles.byteLength;
         maps.push({
           key: key,
           value: value
         });
       }).then(function() {
-        $$("#database-size").html(formatSize(size));
         maps.sort(function(a, b) {
           // return (a.value.name.toUpperCase() < b.value.name.toUpperCase()) ? -1 : (a.value.name.toUpperCase() > b.value.name.toUpperCase()) ? 1 : 0;
           return (a.value.index < b.value.index) ? -1 : (a.value.index > b.value.index) ? 1 : 0;
         });
         
         maps.forEach(function(map, index) {
-          const li = `<li class="overlay" data-key="${map.key}">
-            <a href="#" class="item-link item-content" onclick="$$('#map-title').html('${map.value.name}'); sessionStorage.setItem('activeLayer', '${map.key}'); app.views.main.router.navigate('/map/');">
-              <div class="item-inner">
-                <div class="item-title">
-                  <span class="name">${map.value.name}</span>
-                  <div class="item-footer">${map.value.description}</div>
-                </div>
-                <div class="item-after" style="display: block">
-                  <span class="badge">${formatSize(map.value.mbtiles.byteLength)}</span><br>
-                  <span style="font-size: x-small">${new Date(map.value.timestamp).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </a>
-            <div class="sortable-handler"></div>
-          </li>`;
-            
-          $$("#map-list").append(li);
+          addMaptoList(map);
         });
     
         app.progressbar.hide();
@@ -523,6 +510,28 @@ function loadSavedMaps() {
   });
 }
 
+function addMaptoList(map) {
+  storageSize += map.value.mbtiles.byteLength;
+  $$("#database-size").html(formatSize(storageSize));
+  const li = `<li class="overlay" data-key="${map.key}">
+      <a href="#" class="item-link item-content" onclick="$$('#map-title').html('${map.value.name}'); sessionStorage.setItem('activeLayer', '${map.key}'); app.views.main.router.navigate('/map/');">
+        <div class="item-inner">
+          <div class="item-title">
+            <span class="name">${map.value.name}</span>
+            <div class="item-footer">${map.value.description}</div>
+          </div>
+          <div class="item-after" style="display: block">
+            <span class="badge">${formatSize(map.value.mbtiles.byteLength)}</span><br>
+            <span style="font-size: x-small">${new Date(map.value.timestamp).toLocaleDateString()}</span>
+          </div>
+        </div>
+      </a>
+      <div class="sortable-handler"></div>
+    </li>`;
+      
+    $$("#map-list").append(li);
+}
+
 function loadMap() {
   app.progressbar.show("white");
   const key = sessionStorage.getItem("activeLayer");
@@ -534,8 +543,8 @@ function loadMap() {
       fitBounds: true,
       updateWhenIdle: false
     }).on("databaseloaded", function(e) {
-      $$(".leaflet-control-attribution").html($$(".leaflet-control-attribution").html().replace("<a", "<a class='external' target='_blank'"));
       app.progressbar.hide();
+      $$(".leaflet-control-attribution").html($$(".leaflet-control-attribution").html().replace("<a", "<a class='external' target='_blank'"));
     });
     layers.raster.addLayer(layer);
   });
@@ -691,9 +700,11 @@ app.on("init", function() {
           window.history.replaceState(null, null, window.location.pathname);
           app.views.main.router.navigate("/map/");
         } else {
+          app.preloader.show();
           fetch(url).then(response => {
             return response.arrayBuffer();
           }).then(buffer => {
+            app.preloader.hide();
             const db = new SQL.Database(new Uint8Array(buffer));
             saveMap(db, buffer, url);
             // sessionStorage.setItem("activeLayer", url);
