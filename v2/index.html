@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-    <link rel="stylesheet" href="assets/vendor/framework7-5.7.14/css/framework7.bundle.min.css">
+    <link rel="stylesheet" href="assets/vendor/framework7-6.0.1/framework7-bundle.min.css">
     <link rel="stylesheet" href="assets/vendor/leaflet-1.7.1/leaflet.css">
     <link rel="stylesheet" href="assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.css">
     <link rel="stylesheet" href="assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.css">
@@ -108,7 +108,7 @@
                     <div class="item-content">
                       <div class="item-inner">
                         <div class="item-title">Release Version</div>
-                        <div class="item-after">2020.12.16.1</div>
+                        <div class="item-after">2021.01.06.1</div>
                       </div>
                     </div>
                   </li>
@@ -207,9 +207,30 @@
               <div class="block-title">Tools</div>
               <div class="list">
                 <ul>
-                  <li><a class="item-link list-button panel-close" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">Zoom to Map</a></li>
-                  <li><a class="item-link list-button panel-close" onclick="startMeasurement();">Measure Distance</a></li>
-                  <li><a class="item-link list-button panel-close" onclick="launchGmaps();">Open Google Maps</a></li>
+                  <li class="panel-close" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">
+                    <div class="item-content">
+                      <div class="item-media"><i class="icon material-icons">zoom_out_map</i></div>
+                      <div class="item-inner">
+                        <div class="item-title">Zoom to Map</div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="panel-close" onclick="startMeasurement();">
+                    <div class="item-content">
+                      <div class="item-media"><i class="icon material-icons">straighten</i></div>
+                      <div class="item-inner">
+                        <div class="item-title">Measure Distance</div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="panel-close" onclick="launchGmaps();">
+                    <div class="item-content">
+                      <div class="item-media"><i class="icon material-icons">map</i></div>
+                      <div class="item-inner">
+                        <div class="item-title">Open Google Maps</div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -430,7 +451,7 @@
         </div>
       </div>
     </div>
-    <script src="assets/vendor/framework7-5.7.14/js/framework7.bundle.min.js"></script>
+    <script src="assets/vendor/framework7-6.0.1/framework7-bundle.min.js"></script>
     <script src="assets/vendor/sqljs-1.4.0/sql-wasm.js"></script>
     <script src="assets/vendor/localForage-1.9.0/localforage.min.js"></script>
     <script src="assets/vendor/leaflet-1.7.1/leaflet.js"></script>

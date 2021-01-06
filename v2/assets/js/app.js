@@ -8,13 +8,13 @@ const storage = localforage.createInstance({
 let storageSize = 0;
 
 const app = new Framework7({
-  root: "#app",
+  el: "#app",
   theme: "md",
   init: false,
   view: {
     stackPages: true,
-    pushState: true,
-    pushStateOnLoad: true
+    browserHistory: true,
+    browserHistoryOnLoad: true
   },
   routes: [{
     name: "home",
@@ -563,7 +563,7 @@ function formatSize(size) {
 function orderList() {
   app.progressbar.show("white");
   const items = $$("#map-list li"), count = items.length;
-  items.each(function(i) {
+  items.each(function(el, i) {
     const key = $$(this).attr("data-key");
     storage.getItem(key).then(function (item) {
       item.index = i;
