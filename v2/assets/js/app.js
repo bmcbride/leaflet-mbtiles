@@ -391,7 +391,7 @@ function fetchFile() {
 }
 
 function loadRaster(file) {
-  // app.progressbar.show("white");
+  app.progressbar.show("white");
   const reader = new FileReader();
   reader.onload = function(e) {
     const db = new SQL.Database(new Uint8Array(reader.result));
@@ -444,6 +444,7 @@ function saveMap(db, file, source) {
   storage.length().then(function(numberOfKeys) {
     value.index = numberOfKeys;
     storage.setItem(key, value).then(function (value) {
+      $$("#empty-list-placeholder").remove();
       sessionStorage.setItem("activeLayer", key);
       app.popup.close("#add-popup", false);
       app.views.main.router.navigate("/map/");
@@ -499,7 +500,7 @@ function loadSavedMaps() {
     } else {
       $$("#database-size").html(0);
       $$("#map-list").append(`
-        <li>
+        <li id="empty-list-placeholder">
           <a class="item-link list-button" onclick="app.views.main.router.navigate('/add/');">No maps saved. Add a map now!</a>
         </li>
       `);
