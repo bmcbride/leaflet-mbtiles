@@ -6,12 +6,12 @@
 }
 
 /* Custom color theme */
-:root {
+/* :root {
   --f7-theme-color: #000000;
   --f7-theme-color-rgb: 0, 0, 0;
   --f7-theme-color-shade: #000000;
   --f7-theme-color-tint: #141414;
-}
+} */
 /* Invert navigation bars to fill style */
 :root,
 :root.theme-dark,
@@ -36,6 +36,7 @@
 .calendar-footer {
   --f7-touch-ripple-color: var(--f7-touch-ripple-white);
   --f7-link-highlight-color: var(--f7-link-highlight-white);
+  --f7-link-touch-ripple-color: var(--f7-touch-ripple-white);
   --f7-button-text-color: #fff;
   --f7-button-pressed-bg-color: rgba(255,255,255,0.1);
 }
@@ -44,8 +45,8 @@
   --f7-navbar-large-title-text-color: #000;
 
   --r: 0;
-  --g: 0;
-  --b: 0;
+  --g: 122;
+  --b: 255;
   --progress: var(--f7-navbar-large-collapse-progress);
   --f7-bars-link-color: rgb(
     calc(var(--r) + (255 - var(--r)) * var(--progress)),
