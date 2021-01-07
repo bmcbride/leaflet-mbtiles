@@ -224,7 +224,7 @@ const controls = {
     }
   }).addTo(map),
 
-  layerCtrl: L.control.layers(null, {"Custom Layer": layers.vector}, {collapsed: false})
+  layerCtrl: L.control.layers(null, {"Vector Features": layers.vector}, {collapsed: false})
 };
 
 controls.locateCtrl.start();
@@ -759,15 +759,6 @@ app.on("init", function() {
         }
       });
     }
-
-    // if (app.utils.parseUrlQuery(document.URL).key) {
-    //   const key = app.utils.parseUrlQuery(document.URL).key;
-    //   storage.getItem(key).then(function (value) {
-    //     // $$("#map-title").html("${value.name}");
-    //     sessionStorage.setItem("activeLayer", key);
-    //     app.views.main.router.navigate("/map/");
-    //   });
-    // }
 
     loadSavedMaps();
     if (app.views.current.router.currentRoute.url == "/map/" && sessionStorage.getItem("activeLayer")) {
