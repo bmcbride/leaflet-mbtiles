@@ -75,10 +75,19 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* body {
-  height: 100%;
-  width: 100%;
-} */
+table {
+  border-collapse: collapse;
+  border-bottom: 1px solid #ccc;
+}
+
+table th, td {
+  border: 1px solid #ccc;
+  padding: 5px;
+}
+
+table tr:nth-child(even) {
+  background-color: #f7f7f7;
+}
 
 #map {
   background: white;
@@ -102,13 +111,11 @@
 
 .leaflet-popup-content-wrapper {
   padding: 1px;
-  text-align: left;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 .leaflet-popup-content {
-  margin: 5px 19px;
-  line-height: 1.4;
+  margin: 5px;
 }
 
 .leaflet-popup-close-button {

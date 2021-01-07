@@ -40,8 +40,8 @@ const app = new Framework7({
           // $$("#map-title").html(null);
           app.range.setValue("#opacity-range", 100);
           layers.raster.clearLayers();
-          layers.vector.clearLayers();
-          map.removeControl(controls.layerCtrl);
+          // layers.vector.clearLayers();
+          // map.removeControl(controls.layerCtrl);
           sessionStorage.removeItem("activeLayer");
         }
       }
@@ -69,15 +69,12 @@ const app = new Framework7({
     sortableDisable: function(listEl) {
       $$("#sort-icon").html("sort");
       orderList();
-    }/*,
-    sortableSort: function(listEl, indexes) {
-      console.log(indexes);
-    }*/
+    }
   }
 });
 
 const map = L.map("map", {
-  zoomSnap: 0,
+  zoomSnap: app.device.desktop ? 1 : 0,
   maxZoom: 22,
   zoomControl: false,
   attributionControl: false
@@ -227,7 +224,7 @@ const controls = {
     }
   }).addTo(map),
 
-  layerCtrl: L.control.layers(null, {"GeoJSON": layers.vector}, {collapsed: false})
+  layerCtrl: L.control.layers(null, {"Custom Layer": layers.vector}, {collapsed: false})
 };
 
 controls.locateCtrl.start();
@@ -250,16 +247,17 @@ rasterInput.addEventListener("change", function () {
 
 const vectorInput = L.DomUtil.create("input", "hidden");
 vectorInput.type = "file";
-vectorInput.accept = ".geojson";
+vectorInput.accept = ".geojson, .kml, .gpx";
 vectorInput.style.display = "none";
 
 vectorInput.addEventListener("change", function () {
   const file = vectorInput.files[0];
+  const format = file.name.split(".").pop();
 
-  if (file.name.endsWith(".geojson")) {
-    loadVector(file);
+  if (file.name.endsWith(".geojson") || file.name.endsWith(".kml") || file.name.endsWith(".gpx")) {
+    loadVector(file, format);
   } else {
-    alert("Only .geojson files supported!");
+    app.dialog.alert("GeoJSON, KML, and GPX files supported", "Unsupported Format");
   }
   this.value = "";
 }, false);
@@ -347,7 +345,7 @@ $$(document).on("taphold", ".overlay", function() {
                 app.toast.create({
                   text: "Map Name required!",
                   closeButton: true,
-                  closeButtonColor: "white",
+                  // closeButtonColor: "white",
                   closeTimeout: 2000
                 }).open();
               }
@@ -400,30 +398,74 @@ function loadRaster(file) {
   reader.readAsArrayBuffer(file);
 }
 
-function loadVector(file) {
+function loadVector(file, format) {
   const reader = new FileReader();
+  let geojson = null;
+  app.progressbar.show("white");
   reader.onload = function(e) {
-    const geojson = JSON.parse(reader.result);
+    if (format == "geojson") {
+      geojson = JSON.parse(reader.result);
+    } else if (format == "kml") {
+      const kml = (new DOMParser()).parseFromString(reader.result, "text/xml");
+      geojson = toGeoJSON.kml(kml, {styles: true});
+    } else if (format == "gpx") {
+      const gpx = (new DOMParser()).parseFromString(reader.result, "text/xml");
+      geojson = toGeoJSON.gpx(gpx);
+    }
+
     layers.vector.clearLayers();
 
     L.geoJSON(geojson, {  
+      style: function (feature) {
+        return {	
+          color: feature.properties["stroke"] ? feature.properties["stroke"] : "#ff0000",
+          opacity: feature.properties["stroke-opacity"] ? feature.properties["stroke-opacity"] : 1.0,
+          weight: feature.properties["stroke-width"] ? feature.properties["stroke-width"] : 3,
+          fillColor: feature.properties["fill"] ? feature.properties["fill"] : "#ff0000",
+          fillOpacity: feature.properties["fill-opacity"] ? feature.properties["fill-opacity"] : 0.2,
+        };	
+      },
+      pointToLayer: function (feature, latlng) {	
+        const size = feature.properties["marker-size"] ? feature.properties["marker-size"] : "small";
+        const color = feature.properties["marker-color"] ? feature.properties["marker-color"] : "#ff0000";
+        const sizes = {
+          small: [23, 23],
+          medium: [30, 30],
+          large: [37, 37]
+        };
+        const iconOptions = {
+          iconUrl: encodeURI(`data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0z" fill="${color}"/></svg>`).replace("#", "%23"),
+          iconSize: sizes[size],
+          shadowUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACMAAABaBAMAAADA2vJjAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABWNxwqAAAACHRSTlMACRcjKzJAOtxk//MAAABzSURBVDjL7ZDRDYAwCER1A3EDcQNxA3EDGzeoE2jX91JNTYoLaPr+eDkIUBUK/6TOarpongC1HCFKhrkXwNxRMiKqOslwO3TJODugcHEecT/Oa/BbgOMOqkZI3eHBvkyIvSrbaMfbJeyq9iB7dv6cQuFrnJu2IxWE6etQAAAAAElFTkSuQmCC',
+          shadowSize: sizes[size],
+          shadowAnchor: [sizes[size][0] / 2, sizes[size][1] / 2],
+          iconAnchor: [sizes[size][0] / 2, sizes[size][1]],
+          popupAnchor: [0, -sizes[size][1] / 2]
+        };
+        const icon = L.icon(iconOptions);
+        return L.marker(latlng, {icon});
+      },
       onEachFeature: function (feature, layer) {
         let table = "<div style='overflow:auto;'><table>";
+        const hiddenProps = ["styleUrl", "styleHash", "styleMapHash", "stroke", "stroke-opacity", "stroke-width", "opacity", "fill", "fill-opacity", "icon", "scale", "coordTimes", "marker-size", "marker-color", "marker-symbol"];
         for (const key in feature.properties) {
-          if (feature.properties.hasOwnProperty(key)) {
+          if (feature.properties.hasOwnProperty(key) && hiddenProps.indexOf(key) == -1) {
             table += `<tr><th>${key.toUpperCase()}</th><td>${formatProperty(feature.properties[key])}</td></tr>`;
           }
         }
         table += "</table></div>";
         layer.bindPopup(table, {
+          closeButton: false,
           maxHeight: 300,
           maxWidth: 250
         });
       }
       
     }).addTo(layers.vector);
+    layers.vector.bringToBack();
     map.addControl(controls.layerCtrl);
     map.fitBounds(layers.vector.getBounds());
+    app.progressbar.hide();
   }
   reader.readAsText(file);
 }
@@ -579,7 +621,7 @@ function orderList() {
 }
 
 function formatProperty(value) {
-  if (typeof value == "string" && (value.indexOf("http") === 0 || value.indexOf("https") === 0)) {
+  if (typeof value == "string" && value.startsWith("http")) {
     return `<a class="external" href="${value}" target="_blank">${value}</a>`;
   } else {
     return value;
@@ -607,7 +649,7 @@ function iosChecks() {
         app.toast.create({
           text: "Tap the <img src='assets/img/ios-share.png' height='18px'> button " + (app.device.ipad ? "at the top of the screen" : "below") + " to Add to Home Screen.",
           closeButton: true,
-          closeButtonColor: "white",
+          // closeButtonColor: "white",
           position: app.device.ipad ? "center" : "bottom",
           on: {
             close: function () {
@@ -624,7 +666,7 @@ function startMeasurement(){
   app.toast.create({
     text: "Tap to add measurement segments.",
     closeButton: true,
-    closeButtonColor: "white",
+    // closeButtonColor: "white",
     closeButtonText: "Clear",
     on: {
       close: function () {

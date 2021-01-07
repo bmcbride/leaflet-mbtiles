@@ -38,7 +38,7 @@
             </div>
             <div class="page-content">
               <div style="padding-bottom: 48px">
-                <div class="block-title">About</div>
+                <!-- <div class="block-title">About</div> -->
                 <div class="block">
                   <p>Save maps to your device for offline viewing and navigation!</p>
                 </div>
@@ -107,8 +107,8 @@
                   <li>
                     <div class="item-content">
                       <div class="item-inner">
-                        <div class="item-title">Release Version</div>
-                        <div class="item-after">2021.01.06.4</div>
+                        <div class="item-title">Release</div>
+                        <div class="item-after">2021.01.07.1</div>
                       </div>
                     </div>
                   </li>
@@ -125,7 +125,7 @@
             <div class="navbar">
               <div class="navbar-bg"></div>
               <div class="navbar-inner">
-                <div class="title">Settings</div>
+                <div class="title">Map Settings</div>
                 <div class="right">
                   <a href="#" class="link icon-only panel-close" data-panel="right">
                     <i class="icon material-icons">close</i>
@@ -154,7 +154,7 @@
                   </li>
                 </ul>
               </div>
-              <div class="block-title">Basemaps</div>
+              <div class="block-title">Basemap</div>
               <div class="list">
                 <ul>
                   <li>
@@ -205,31 +205,39 @@
                 </ul>
               </div>
               <div class="block-title">Tools</div>
-              <div class="list">
+              <div class="list no-chevron">
                 <ul>
-                  <li class="panel-close" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">
-                    <div class="item-content">
+                  <li class="panel-close">
+                    <a href="#" class="item-link item-content" onclick="map.fitBounds(layers.raster.getLayers()[0].options.bounds);">
                       <div class="item-media"><i class="icon material-icons">zoom_out_map</i></div>
                       <div class="item-inner">
                         <div class="item-title">Zoom to Map</div>
                       </div>
-                    </div>
+                    </a>
                   </li>
-                  <li class="panel-close" onclick="startMeasurement();">
-                    <div class="item-content">
+                  <li class="panel-close">
+                    <a href="#" class="item-link item-content" onclick="startMeasurement();">
                       <div class="item-media"><i class="icon material-icons">straighten</i></div>
                       <div class="item-inner">
                         <div class="item-title">Measure Distance</div>
                       </div>
-                    </div>
+                    </a>
                   </li>
-                  <li class="panel-close" onclick="launchGmaps();">
-                    <div class="item-content">
+                  <li class="panel-close">
+                    <a href="#" class="item-link item-content" onclick="vectorInput.click();">
+                      <div class="item-media"><i class="icon material-icons">layers</i></div>
+                      <div class="item-inner">
+                        <div class="item-title">Add Custom Layer</div>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="panel-close">
+                    <a href="#" class="item-link item-content" onclick="launchGmaps();">
                       <div class="item-media"><i class="icon material-icons">map</i></div>
                       <div class="item-inner">
                         <div class="item-title">Open Google Maps</div>
                       </div>
-                    </div>
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -458,6 +466,7 @@
     <script src="assets/vendor/leaflet-locatecontrol-0.72.1/L.Control.Locate.min.js"></script>
     <script src="assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js"></script>
     <script src="assets/vendor/leaflet-measure-path-1.5.0/leaflet-measure-path.js"></script>
+    <script src="assets/vendor/togeojson-0.16.0/togeojson.js"></script>
     <script src="assets/js/app.js"></script>
     <script>
       if ("serviceWorker" in navigator) {
