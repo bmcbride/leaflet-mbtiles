@@ -240,7 +240,7 @@ rasterInput.addEventListener("change", function () {
   if (file.name.endsWith(".mbtiles")) {
     loadRaster(file);
   } else {
-    alert("Only .mbtiles files supported!");
+    app.dialog.alert("Raster MBTiles files supported", "Unsupported Format");
   }
   this.value = "";
 }, false);
@@ -472,7 +472,6 @@ function loadVector(file, format) {
 
 function saveMap(db, file, source) {
   const metadata = db.exec("SELECT value FROM metadata WHERE name IN ('name', 'description', 'bounds') ORDER BY name DESC");
-  // const key = metadata[0].values[0][0];
   const key = (source == "file") ? Date.now().toString() : source;
   const value = {
     name: metadata[0].values[0][0] ? metadata[0].values[0][0] : name,
@@ -515,6 +514,7 @@ function saveMap(db, file, source) {
 
 function loadSavedMaps() {
   app.progressbar.show("white");
+  storageSize = 0;
   const maps = [];
   $$("#map-list").empty();
   storage.length().then(function(numberOfKeys) {
