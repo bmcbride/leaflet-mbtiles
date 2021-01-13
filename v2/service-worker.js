@@ -34,7 +34,7 @@ workbox.precaching.precacheAndRoute([
   {url: 'assets/vendor/leaflet-mbtiles/Leaflet.TileLayer.MBTiles.js', revision: '10.16.20.1'},
   {url: 'assets/vendor/togeojson-0.16.0/togeojson.js', revision: '01.07.21.1'},
   {url: 'assets/js/app.js', revision: '01.08.21.1'},
-  {url: 'assets/css/app.css', revision: '01.07.21.1'}
+  {url: 'assets/css/app.css', revision: '01.13.21.1'}
 ], {
   // Ignore all URL parameters.
   ignoreURLParametersMatching: [/.*/]
