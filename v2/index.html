@@ -41,6 +41,7 @@
                 <!-- <div class="block-title">About</div> -->
                 <div class="block">
                   <p>Save maps to your device for offline viewing and navigation!</p>
+                  <p>Import custom raster maps (MBTiles) and view vector features (GeoJSON, KML, GPX) directly from your device, the web, or common cloud storage providers (iCloud, Dropbox, GDrive).</p>
                 </div>
                 <div class="block-title">Storage</div>
                 <div class="list">
@@ -108,7 +109,7 @@
                     <div class="item-content">
                       <div class="item-inner">
                         <div class="item-title">Release</div>
-                        <div class="item-after">2021.01.13.1</div>
+                        <div class="item-after">2021.01.14.1</div>
                       </div>
                     </div>
                   </li>
@@ -227,7 +228,7 @@
                     <a href="#" class="item-link item-content" onclick="vectorInput.click();">
                       <div class="item-media"><i class="icon material-icons">layers</i></div>
                       <div class="item-inner">
-                        <div class="item-title">Import Vector Features</div>
+                        <div class="item-title">Load Vector Features</div>
                       </div>
                     </a>
                   </li>
@@ -319,30 +320,12 @@
                 <div class="title">
                   Import Map
                 </div>
-                <!-- <div class="right">
-                  <a href="#" class="link icon-only">
-                    <i class="icon material-icons">qr_code</i>
-                  </a>
-                </div> -->
               </div>
             </div>
             <div class="page-content">
               <div class="list no-chevron">
                 <ul>
-                  <!-- <li>
-                    <a href="#" class="item-link item-content" onclick="app.views.main.router.navigate('/collections/');">
-                      <div class="item-media"><i class="icon material-icons">search</i></div>
-                      <div class="item-inner">
-                        <div class="item-title">
-                          From A Collection
-                          <div class="item-footer">
-                            Search collections of available maps
-                          </div>
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                  <li> -->
+                  <li>
                     <a href="#" class="item-link item-content" onclick="rasterInput.click();">
                       <div class="item-media"><i class="icon material-icons">sd_storage</i></div>
                       <div class="item-inner">
