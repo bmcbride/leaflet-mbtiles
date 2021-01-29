@@ -75,6 +75,7 @@ const app = new Framework7({
 
 const map = L.map("map", {
   zoomSnap: app.device.desktop ? 1 : 0,
+  tap: false,
   maxZoom: 22,
   zoomControl: false,
   attributionControl: false,
