@@ -1,12 +1,12 @@
-importScripts('assets/vendor/workbox-v5.1.2/workbox-sw.js');
+importScripts('assets/vendor/workbox-6.0.2/workbox-sw.js');
 
 workbox.setConfig({
   debug: false,
-  modulePathPrefix: 'assets/vendor/workbox-v5.1.2/'
+  modulePathPrefix: 'assets/vendor/workbox-6.0.2/'
 });
 
 workbox.precaching.precacheAndRoute([
-  {url: 'index.html', revision: '01.28.21.2'},
+  {url: 'index.html', revision: '01.28.21.3'},
   {url: 'manifest.json', revision: '01.06.21.2'},
   {url: 'assets/img/apple-touch-icon.png', revision: '09.08.20.1'},
   {url: 'assets/img/favicon-32x32.png', revision: '09.08.20.1'},
