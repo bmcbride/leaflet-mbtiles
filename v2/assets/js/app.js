@@ -30,7 +30,9 @@ const app = new Framework7({
           map.invalidateSize();
         },
         opened: function() {
-          loadMap();
+          if (sessionStorage.getItem("activeLayer")) {
+            loadMap();
+          }
         },
         close: function() {
           measure.clearMeasure();
@@ -764,8 +766,8 @@ app.on("init", function() {
     }
 
     loadSavedMaps();
-    if (app.views.current.router.currentRoute.url == "/map/" && sessionStorage.getItem("activeLayer")) {
-      loadMap();
+    if (app.views.current.router.currentRoute.url == "/map/" && !sessionStorage.getItem("activeLayer")) {
+      app.views.main.router.back();
     }
   });
 })
