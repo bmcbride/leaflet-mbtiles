@@ -296,7 +296,7 @@ map.on("moveend", function(e) {
   }
 });
 
-$$(document).on("taphold", ".overlay", function() {
+$$(document).on("taphold contextmenu", ".overlay", function() {
   const li = $$(this);
   const key = li.attr("data-key");
   const name = li.find(".item-title .name").html();
