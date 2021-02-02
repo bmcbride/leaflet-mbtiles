@@ -790,8 +790,12 @@ app.on("init", function() {
     }
 
     loadSavedMaps();
-    if (app.views.current.router.currentRoute.url == "/map/" && !sessionStorage.getItem("activeLayer")) {
-      app.views.main.router.back();
+    if (app.views.current.router.currentRoute.url == "/map/") {
+      if (sessionStorage.getItem("activeLayer")) {
+        controls.locateCtrl.stopFollowing();
+      } else {
+        app.views.main.router.back(); 
+      }
     }
   });
 })
