@@ -71,6 +71,15 @@ const app = new Framework7({
     sortableDisable: function(listEl) {
       $$("#sort-icon").html("sort");
       orderList();
+    },
+    toggleChange: function(toggle) {
+      if (toggle.inputEl.id == "units") {
+        if (toggle.inputEl.checked) {
+          setUnits("imperial");
+        } else {
+          setUnits("metric");
+        }
+      }
     }
   }
 });
@@ -645,6 +654,16 @@ function emptyDatabase() {
   });
 }
 
+function setUnits(units) {
+  if (units == "metric") {
+    localStorage.setItem("units", "metric");
+    layers.measure.line._measurementOptions.imperial = false;
+  } else {
+    localStorage.removeItem("units");
+    layers.measure.line._measurementOptions.imperial = true;
+  }
+}
+
 function iosChecks() {
   if (app.device.ios) {
     if (parseFloat(app.device.osVersion) < 11.3) {
@@ -732,6 +751,11 @@ app.on("init", function() {
       }
     }
   });
+
+  if (localStorage.getItem("units") && localStorage.getItem("units") == "metric") {
+    $$("#units")[0].checked = false;
+    layers.measure.line._measurementOptions.imperial = false;
+  }
   
   initSqlJs({
     locateFile: function() {
