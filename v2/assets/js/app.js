@@ -227,7 +227,7 @@ const controls = {
       return { link: link, icon: icon };
     },
     onLocationError: function(e) {
-      alert(e.message);
+      app.dialog.alert(e.message, "Alert");
     }
   }).addTo(map),
 
@@ -296,7 +296,7 @@ map.on("moveend", function(e) {
   }
 });
 
-$$(document).on(`${app.device.desktop? "contextmenu": "taphold"}`, ".overlay", function() {
+$$(document).on(`${app.device.desktop ? "contextmenu": "taphold"}`, ".overlay", function() {
   const li = $$(this);
   const key = li.attr("data-key");
   const name = li.find(".item-title .name").html();
@@ -741,7 +741,7 @@ app.on("init", function() {
     SQL = sql;
     if (app.utils.parseUrlQuery(document.URL).map) {
       const url = app.utils.parseUrlQuery(document.URL).map;
-      
+      controls.locateCtrl.stopFollowing();
       storage.getItem(url).then(value => {
         if (value) {
           sessionStorage.setItem("activeLayer", url);
